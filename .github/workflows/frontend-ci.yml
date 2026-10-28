@@ -1,0 +1,48 @@
+name: frontend-ci
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  react:
+    name: react
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend/react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/react/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  angular:
+    name: angular
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend/angular
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/angular/package-lock.json
+      - run: npm ci
+      - run: npm run build
