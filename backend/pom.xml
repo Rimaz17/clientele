@@ -11,7 +11,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>org.amigoscode</groupId>
+    <groupId>dev.rimaz</groupId>
     <artifactId>clientele-api</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Clientele API</name>
