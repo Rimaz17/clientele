@@ -5,6 +5,8 @@ services:
     environment:
       POSTGRES_USER: amigoscode
       POSTGRES_PASSWORD: password
+      # Only applied when the volume is created for the first time.
+      POSTGRES_DB: customer
       PGDATA: /data/postgres
     volumes:
       - db:/data/postgres
