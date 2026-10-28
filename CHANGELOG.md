@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend deployment runs only when triggered manually.
 - Maven artifact, Docker images and compose services are renamed to `clientele`.
 - The React `.env` file is no longer tracked; copy `frontend/react/.env.example` instead.
+- The backend base package is now `dev.rimaz.clientele` and the Maven `groupId` is `dev.rimaz`.
 
 ### Removed
 - The unused in-memory customer DAO.
