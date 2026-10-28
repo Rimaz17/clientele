@@ -12,14 +12,16 @@
     </parent>
 
     <groupId>org.amigoscode</groupId>
-    <artifactId>amigoscode-api</artifactId>
+    <artifactId>clientele-api</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>Clientele API</name>
+    <description>REST API for Clientele, a customer management system</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <docker.username>amigoscode</docker.username>
-        <docker.image.name>amigoscode-api</docker.image.name>
+        <docker.username>your-dockerhub-username</docker.username>
+        <docker.image.name>clientele-api</docker.image.name>
         <docker.image.tag/>
         <jsonwebtoken.version>0.11.5</jsonwebtoken.version>
     </properties>

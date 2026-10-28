@@ -39,7 +39,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
         }).catch(() => {
             errorNotification("Error", "Profile picture failed upload")
         })
-    }, [])
+    }, [customerId, fetchCustomers])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
     return (
@@ -55,7 +55,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             {
                 isDragActive ?
                     <p>Drop the picture here ...</p> :
-                    <p>Drag 'n' drop picture here, or click to select picture</p>
+                    <p>Drag &apos;n&apos; drop picture here, or click to select picture</p>
             }
         </Box>
     )

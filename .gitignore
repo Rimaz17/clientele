@@ -44,3 +44,13 @@ typings
 !.vscode/tasks.json
 !.vscode/launch.json
 .history/*
+
+# Environment files (commit only the documented examples)
+.env
+.env.*
+!.env.example
+
+# Local AI and design tooling, never committed
+CLAUDE.md
+.claude/
+**/.impeccable/

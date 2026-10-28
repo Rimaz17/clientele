@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import Customer from './Customer.jsx'
-import {ChakraProvider, Text} from '@chakra-ui/react'
+import {ChakraProvider} from '@chakra-ui/react'
 import { createStandaloneToast } from '@chakra-ui/toast'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./components/login/Login.jsx";

@@ -3,5 +3,10 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  // Fast Refresh needs the dev-server preamble, which does not exist under Vitest.
+  plugins: [react({ fastRefresh: !process.env.VITEST })],
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+  },
 })
