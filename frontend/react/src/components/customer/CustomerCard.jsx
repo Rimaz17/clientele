@@ -20,9 +20,7 @@ import {customerProfilePictureUrl, deleteCustomer} from "../../services/client.j
 import {errorNotification, successNotification} from "../../services/notification.js";
 import UpdateCustomerDrawer from "./UpdateCustomerDrawer.jsx";
 
-export default function CardWithImage({id, name, email, age, gender, imageNumber, fetchCustomers}) {
-    const randomUserGender = gender === "MALE" ? "men" : "women";
-
+export default function CardWithImage({id, name, email, age, gender, fetchCustomers}) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const cancelRef = useRef()
 
@@ -102,7 +100,7 @@ export default function CardWithImage({id, name, email, age, gender, imageNumber
                                     </AlertDialogHeader>
 
                                     <AlertDialogBody>
-                                        Are you sure you want to delete {name}? You can't undo this action afterwards.
+                                        Are you sure you want to delete {name}? You can&apos;t undo this action afterwards.
                                     </AlertDialogBody>
 
                                     <AlertDialogFooter>

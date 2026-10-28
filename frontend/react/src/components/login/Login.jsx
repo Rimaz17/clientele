@@ -58,7 +58,7 @@ const LoginForm = () => {
             initialValues={{username: '', password: ''}}
             onSubmit={(values, {setSubmitting}) => {
                 setSubmitting(true);
-                login(values).then(res => {
+                login(values).then(() => {
                     navigate("/dashboard")
                     console.log("Successfully logged in");
                 }).catch(err => {
