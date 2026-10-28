@@ -1,12 +1,10 @@
 name: CD - Deploy Backend
 
+# Manual trigger only. Deploying needs these repository secrets, which are not set up yet:
+# DOCKERHUB_USERNAME, DOCKERHUB_ACCESS_TOKEN, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+# EB_APPLICATION_NAME, EB_ENVIRONMENT_NAME, EB_REGION and SLACK_WEBHOOK_URL.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - backend/**
 
 jobs:
   deploy:
@@ -34,7 +32,7 @@ jobs:
       - name: Slack commit message and sha
         run: >
           curl -X POST -H 'Content-type: application/json'
-          --data '{"text":":github: https://github.com/amigoscode/spring-boot-full-stack/commit/${{ github.sha }} - ${{ github.event.head_commit.message }}"}' 
+          --data '{"text":":github: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }} - ${{ github.event.head_commit.message }}"}' 
           ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Send Slack Message
         run: >
@@ -64,13 +62,13 @@ jobs:
       - name: Send Slack Message
         run: >
           curl -X POST -H 'Content-type: application/json' 
-          --data '{"text":":docker: Image tag:${{steps.build-number.outputs.BUILD_NUMBER}} pushed to https://hub.docker.com/repository/docker/amigoscode/amigoscode-api"}' 
+          --data '{"text":":docker: Image tag:${{steps.build-number.outputs.BUILD_NUMBER}} pushed to https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/clientele-api"}' 
           ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Update Dockerrun.aws.json api image tag with new build number
         run: |
           echo "Dockerrun.aws.json before updating tag"
           cat ../Dockerrun.aws.json
-          sed -i -E 's_(amigoscode/amigoscode-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' ../Dockerrun.aws.json
+          sed -i -E 's_(/clientele-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' ../Dockerrun.aws.json
           echo "Dockerrun.aws.json after updating tag"
           cat ../Dockerrun.aws.json
       - name: Send Slack Message
@@ -92,7 +90,7 @@ jobs:
       - name: Send Slack Message
         run: >
           curl -X POST -H 'Content-type: application/json' 
-          --data '{"text":":githubloading: Committing to repo https://github.com/amigoscode/spring-boot-full-stack/"}' 
+          --data '{"text":":githubloading: Committing to repo ${{ github.server_url }}/${{ github.repository }}"}' 
           ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Commit and push Dockerrun.aws.json
         run: |
@@ -104,7 +102,7 @@ jobs:
       - name: Send Slack Message
         run: >
           curl -X POST -H 'Content-type: application/json' 
-          --data '{"text":"Deployment and commit completed :github-check-mark: :party_blob: - http://amigoscodeapi-env.eba-ymxutmev.eu-west-1.elasticbeanstalk.com/"}' 
+          --data '{"text":"Deployment and commit completed :github-check-mark: :party_blob:"}' 
           ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Send Slack Message
         if: always()
