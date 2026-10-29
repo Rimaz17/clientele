@@ -25,7 +25,7 @@ const Customer = () => {
         }).catch(err => {
             setError(getApiErrorMessage(err))
             errorNotification(
-                err.code,
+                "Could not load customers",
                 getApiErrorMessage(err)
             )
         }).finally(() => {

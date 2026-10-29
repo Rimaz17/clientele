@@ -41,7 +41,7 @@ const LoginForm = () => {
                     console.log("Successfully logged in");
                 }).catch(err => {
                     errorNotification(
-                        err.code,
+                        "Login failed",
                         getApiErrorMessage(err)
                     )
                 }).finally(() => {

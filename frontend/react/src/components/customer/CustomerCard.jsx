@@ -120,7 +120,7 @@ export default function CardWithImage({id, name, email, age, gender, fetchCustom
                                             }).catch(err => {
                                                 console.log(err);
                                                 errorNotification(
-                                                    err.code,
+                                                    "Could not delete customer",
                                                     getApiErrorMessage(err)
                                                 )
                                             }).finally(() => {

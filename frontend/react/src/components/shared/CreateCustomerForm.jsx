@@ -52,9 +52,9 @@ const CreateCustomerForm = ({ onSuccess }) => {
                             onSuccess(res.headers["authorization"]);
                         }).catch(err => {
                             console.log(err);
-                            setErrors(getFieldErrors(err));
+                            setErrors(getFieldErrors(err, {conflictField: "email"}));
                             errorNotification(
-                                err.code,
+                                "Could not save customer",
                                 getApiErrorMessage(err)
                             )
                     }).finally(() => {

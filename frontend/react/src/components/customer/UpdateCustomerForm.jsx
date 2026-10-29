@@ -18,7 +18,7 @@ const ACCEPTED_IMAGE_TYPES = {
 const MyDropzone = ({ customerId, fetchCustomers }) => {
     const onDrop = useCallback(acceptedFiles => {
         if (acceptedFiles.length === 0) {
-            errorNotification("Error", "Choose a JPEG, PNG or WebP image")
+            errorNotification("Upload failed", "Choose a JPEG, PNG or WebP image")
             return
         }
         const formData = new FormData();
@@ -28,10 +28,10 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             customerId,
             formData
         ).then(() => {
-            successNotification("Success", "Profile picture uploaded")
+            successNotification("Profile picture updated", "The new picture is now shown")
             fetchCustomers()
         }).catch(err => {
-            errorNotification("Error", getApiErrorMessage(err, "Profile picture failed upload"))
+            errorNotification("Upload failed", getApiErrorMessage(err, "The profile picture could not be uploaded"))
         })
     }, [customerId, fetchCustomers])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
@@ -101,9 +101,9 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                             fetchCustomers();
                         }).catch(err => {
                         console.log(err);
-                        setErrors(getFieldErrors(err));
+                        setErrors(getFieldErrors(err, {conflictField: "email"}));
                         errorNotification(
-                            err.code,
+                            "Could not update customer",
                             getApiErrorMessage(err)
                         )
                     }).finally(() => {
