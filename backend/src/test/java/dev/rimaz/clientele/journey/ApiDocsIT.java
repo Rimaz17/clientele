@@ -1,10 +1,18 @@
 package dev.rimaz.clientele.journey;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @IntegrationTest
@@ -12,6 +20,39 @@ class ApiDocsIT {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Every status an endpoint can return is documented, and no others.
+    // Errors use the ApiError schema.
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "get    | /api/v1/customers                              | 200 400 403",
+            "post   | /api/v1/customers                              | 200 400 409",
+            "get    | /api/v1/customers/{customerId}                 | 200 400 403 404",
+            "put    | /api/v1/customers/{customerId}                 | 200 400 403 404 409",
+            "delete | /api/v1/customers/{customerId}                 | 200 400 403 404",
+            "post   | /api/v1/customers/{customerId}/profile-image   | 200 400 403 404 413",
+            "get    | /api/v1/customers/{customerId}/profile-image   | 200 400 404"
+    })
+    void documentsEveryResponseOfAnEndpoint(String method, String path, String statuses) throws Exception {
+        JsonNode operation = apiDocs().path("paths").path(path).path(method);
+        assertThat(operation.isMissingNode()).as("%s %s is documented", method, path).isFalse();
+        assertThat(operation.path("summary").asText()).isNotBlank();
+        assertThat(operation.path("tags").isArray()).isTrue();
+
+        JsonNode responses = operation.path("responses");
+        List<String> documented = new ArrayList<>();
+        responses.fieldNames().forEachRemaining(documented::add);
+        assertThat(documented).containsExactlyInAnyOrder(statuses.split(" "));
+        documented.stream()
+                .filter(status -> !status.startsWith("2"))
+                .forEach(status -> assertThat(responses.path(status)
+                        .at("/content/application~1json/schema/$ref").asText())
+                        .as("%s %s %s", method, path, status)
+                        .isEqualTo("#/components/schemas/ApiError"));
+    }
 
     @Test
     void servesTheOpenApiDocumentWithoutAToken() {
@@ -118,5 +159,17 @@ class ApiDocsIT {
                 .is3xxRedirection()
                 .expectHeader()
                 .valueMatches("Location", ".*/swagger-ui/index.html.*");
+    }
+
+    private JsonNode apiDocs() throws Exception {
+        byte[] body = webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .returnResult()
+                .getResponseBody();
+        return objectMapper.readTree(body);
     }
 }
