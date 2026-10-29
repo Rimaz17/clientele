@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -55,8 +56,11 @@ public abstract class AbstractTestcontainers {
         );
     }
 
+    // Not pooled: every test builds its own JdbcTemplate, and a pool per test
+    // would exhaust the container's connection limit.
     private static DataSource getDataSource() {
         return DataSourceBuilder.create()
+                .type(SimpleDriverDataSource.class)
                 .driverClassName(postgreSQLContainer.getDriverClassName())
                 .url(postgreSQLContainer.getJdbcUrl())
                 .username(postgreSQLContainer.getUsername())
