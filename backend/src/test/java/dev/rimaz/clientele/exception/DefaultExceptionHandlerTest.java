@@ -3,6 +3,7 @@ package dev.rimaz.clientele.exception;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.http.MockHttpInputMessage;
@@ -10,10 +11,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,6 +94,24 @@ class DefaultExceptionHandlerTest {
                 new MissingServletRequestPartException("file"), request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "Required part 'file' is missing");
+    }
+
+    @Test
+    void unsupportedMethodReturns405() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new HttpRequestMethodNotSupportedException("PATCH"), request);
+
+        assertApiError(response, HttpStatus.METHOD_NOT_ALLOWED, "Request method 'PATCH' is not supported");
+    }
+
+    @Test
+    void unsupportedMediaTypeReturns415() {
+        HttpMediaTypeNotSupportedException exception = new HttpMediaTypeNotSupportedException(
+                MediaType.TEXT_PLAIN, List.of(MediaType.APPLICATION_JSON));
+
+        ResponseEntity<ApiError> response = underTest.handleException(exception, request);
+
+        assertApiError(response, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Content type 'text/plain' is not supported");
     }
 
     @Test

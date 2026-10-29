@@ -7,6 +7,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,6 +65,20 @@ public class DefaultExceptionHandler {
                                                     HttpServletRequest request) {
         String message = "Required part '%s' is missing".formatted(e.getRequestPartName());
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleException(HttpRequestMethodNotSupportedException e,
+                                                    HttpServletRequest request) {
+        String message = "Request method '%s' is not supported".formatted(e.getMethod());
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, message, request);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleException(HttpMediaTypeNotSupportedException e,
+                                                    HttpServletRequest request) {
+        String message = "Content type '%s' is not supported".formatted(e.getContentType());
+        return buildResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE, message, request);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
