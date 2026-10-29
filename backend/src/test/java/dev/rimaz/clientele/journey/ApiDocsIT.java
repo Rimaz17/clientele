@@ -1,0 +1,273 @@
+package dev.rimaz.clientele.journey;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+
+@IntegrationTest
+class ApiDocsIT {
+
+    @Autowired
+    private WebTestClient webTestClient;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Every status an endpoint can return is documented, and no others.
+    // Errors use the ApiError schema.
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "get    | /api/v1/customers                              | 200 400 403",
+            "post   | /api/v1/customers                              | 200 400 409",
+            "get    | /api/v1/customers/{customerId}                 | 200 400 403 404",
+            "put    | /api/v1/customers/{customerId}                 | 200 400 403 404 409",
+            "delete | /api/v1/customers/{customerId}                 | 200 400 403 404",
+            "post   | /api/v1/customers/{customerId}/profile-image   | 200 400 403 404 413",
+            "get    | /api/v1/customers/{customerId}/profile-image   | 200 400 404",
+            "post   | /api/v1/auth/login                             | 200 400 401",
+            "get    | /ping                                          | 200",
+            "get    | /api/v1/customers/stats                        | 200 403"
+    })
+    void documentsEveryResponseOfAnEndpoint(String method, String path, String statuses) throws Exception {
+        JsonNode operation = apiDocs().path("paths").path(path).path(method);
+        assertThat(operation.isMissingNode()).as("%s %s is documented", method, path).isFalse();
+        assertThat(operation.path("summary").asText()).isNotBlank();
+        assertThat(operation.path("tags").isArray()).isTrue();
+
+        JsonNode responses = operation.path("responses");
+        List<String> documented = new ArrayList<>();
+        responses.fieldNames().forEachRemaining(documented::add);
+        assertThat(documented).containsExactlyInAnyOrder(statuses.split(" "));
+        documented.stream()
+                .filter(status -> !status.startsWith("2"))
+                .forEach(status -> assertThat(responses.path(status)
+                        .at("/content/application~1json/schema/$ref").asText())
+                        .as("%s %s %s", method, path, status)
+                        .isEqualTo("#/components/schemas/ApiError"));
+    }
+
+    @Test
+    void servesTheOpenApiDocumentWithoutAToken() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.openapi").exists();
+    }
+
+    @Test
+    void describesTheApiAndItsBearerToken() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.info.title").isEqualTo("Clientele API")
+                .jsonPath("$.info.version").isEqualTo("v1")
+                .jsonPath("$.components.securitySchemes.bearerAuth.type").isEqualTo("http")
+                .jsonPath("$.components.securitySchemes.bearerAuth.scheme").isEqualTo("bearer")
+                .jsonPath("$.components.securitySchemes.bearerAuth.bearerFormat").isEqualTo("JWT")
+                .jsonPath("$.security[0].bearerAuth").isArray();
+    }
+
+    // Catches a new endpoint that was added without OpenAPI annotations.
+    @Test
+    void everyApiOperationHasANamedTagAndASummary() throws Exception {
+        JsonNode paths = apiDocs().path("paths");
+        List<String> checked = new ArrayList<>();
+        paths.fields().forEachRemaining(path -> {
+            if (path.getKey().startsWith("/actuator")) {
+                return;
+            }
+            path.getValue().fields().forEachRemaining(operation -> {
+                String name = operation.getKey() + " " + path.getKey();
+                JsonNode tags = operation.getValue().path("tags");
+                assertThat(tags.size()).as("%s has one tag", name).isEqualTo(1);
+                assertThat(tags.get(0).asText()).as("%s has a named tag", name).doesNotContain("-controller");
+                assertThat(operation.getValue().path("summary").asText()).as("%s has a summary", name).isNotBlank();
+                checked.add(name);
+            });
+        });
+        assertThat(checked).hasSize(10);
+    }
+
+    @Test
+    void documentsEveryQueryParameterOfTheCustomerList() throws Exception {
+        JsonNode parameters = apiDocs().at("/paths/~1api~1v1~1customers/get/parameters");
+
+        List<String> names = new ArrayList<>();
+        parameters.forEach(parameter -> {
+            names.add(parameter.path("name").asText());
+            assertThat(parameter.path("in").asText()).isEqualTo("query");
+            assertThat(parameter.path("required").asBoolean()).isFalse();
+            assertThat(parameter.path("description").asText()).isNotBlank();
+        });
+        assertThat(names).containsExactly("page", "size", "sort", "search", "gender", "minAge", "maxAge");
+        assertThat(parameter(parameters, "size").at("/schema/maximum").asInt()).isEqualTo(100);
+        assertThat(parameter(parameters, "sort").at("/schema/default").asText()).isEqualTo("createdAt,desc");
+        assertThat(parameter(parameters, "gender").at("/schema/enum").toString()).isEqualTo("[\"MALE\",\"FEMALE\"]");
+    }
+
+    @Test
+    void describesTheRequestBodiesWithExamplesAndRules() throws Exception {
+        JsonNode schemas = apiDocs().path("components").path("schemas");
+
+        JsonNode registration = schemas.path("CustomerRegistrationRequest");
+        assertThat(registration.path("required").toString())
+                .contains("name", "email", "password", "age", "gender");
+        assertThat(registration.at("/properties/email/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(registration.at("/properties/name/maxLength").asInt()).isEqualTo(15);
+        assertThat(registration.at("/properties/age/minimum").asInt()).isEqualTo(16);
+        assertThat(registration.at("/properties/age/maximum").asInt()).isEqualTo(100);
+
+        JsonNode update = schemas.path("CustomerUpdateRequest");
+        assertThat(update.has("required")).isFalse();
+        assertThat(update.at("/properties/email/example").asText()).isEqualTo("alex.jones@example.com");
+
+        JsonNode login = schemas.path("AuthenticationRequest");
+        assertThat(login.at("/properties/username/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(login.at("/properties/password/example").asText()).isEqualTo("secret-pw");
+    }
+
+    @Test
+    void describesTheResponseBodiesWithExamples() throws Exception {
+        JsonNode schemas = apiDocs().path("components").path("schemas");
+
+        assertThat(schemas.at("/CustomerDTO/properties/createdAt/format").asText()).isEqualTo("date-time");
+        assertThat(schemas.at("/CustomerDTO/properties/email/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(schemas.at("/CustomerDTO/properties").has("password")).isFalse();
+        assertThat(schemas.at("/ApiError/properties/message/example").asText()).isEqualTo("Request validation failed");
+        assertThat(schemas.at("/ApiFieldError/properties/field/example").asText()).isEqualTo("email");
+        assertThat(schemas.at("/PageResponseCustomerDTO/properties/totalElements/example").asInt()).isEqualTo(132);
+        assertThat(schemas.at("/CustomerStats/properties/genderSplit/example/MALE").asInt()).isEqualTo(70);
+        assertThat(schemas.at("/MonthlySignups/properties/month/example").asText()).isEqualTo("2026-03");
+        assertThat(schemas.at("/AuthenticationResponse/properties/token/description").asText()).isNotBlank();
+    }
+
+    @Test
+    void marksThePublicEndpointsAsNotNeedingAToken() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/api/v1/auth/login'].post.security").value(hasSize(0))
+                .jsonPath("$.paths['/api/v1/customers'].post.security").value(hasSize(0))
+                .jsonPath("$.paths['/api/v1/customers/{customerId}/profile-image'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/ping'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/actuator/health'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/actuator/info'].get.security").value(hasSize(0));
+    }
+
+    @Test
+    void leavesProtectedEndpointsOnTheDefaultBearerRequirement() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/api/v1/customers'].get.security").doesNotExist()
+                .jsonPath("$.paths['/api/v1/customers/stats'].get.security").doesNotExist()
+                .jsonPath("$.paths['/api/v1/customers/{customerId}/profile-image'].post.security").doesNotExist();
+    }
+
+    @Test
+    void documentsThePublicActuatorEndpoints() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/actuator/health'].get").exists()
+                .jsonPath("$.paths['/actuator/info'].get").exists();
+    }
+
+    @Test
+    void doesNotAddEveryExceptionHandlerResponseToEveryOperation() {
+        // Without springdoc.override-with-generic-response=false, /ping would
+        // claim to return 404, 409 and every other handled error.
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/ping'].get.responses['200']").exists()
+                .jsonPath("$.paths['/ping'].get.responses['409']").doesNotExist()
+                .jsonPath("$.paths['/ping'].get.responses['500']").doesNotExist();
+    }
+
+    @Test
+    void sortsTheGroupsAndOperationsInSwaggerUi() {
+        webTestClient.get()
+                .uri("/v3/api-docs/swagger-config")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.tagsSorter").isEqualTo("alpha")
+                .jsonPath("$.operationsSorter").isEqualTo("alpha");
+    }
+
+    @Test
+    void servesSwaggerUiWithoutAToken() {
+        webTestClient.get()
+                .uri("/swagger-ui/index.html")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentTypeCompatibleWith(MediaType.TEXT_HTML);
+    }
+
+    @Test
+    void redirectsTheShortSwaggerUiPath() {
+        webTestClient.get()
+                .uri("/swagger-ui.html")
+                .exchange()
+                .expectStatus()
+                .is3xxRedirection()
+                .expectHeader()
+                .valueMatches("Location", ".*/swagger-ui/index.html.*");
+    }
+
+    private static JsonNode parameter(JsonNode parameters, String name) {
+        for (JsonNode parameter : parameters) {
+            if (parameter.path("name").asText().equals(name)) {
+                return parameter;
+            }
+        }
+        throw new AssertionError("No parameter " + name);
+    }
+
+    private JsonNode apiDocs() throws Exception {
+        byte[] body = webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .returnResult()
+                .getResponseBody();
+        return objectMapper.readTree(body);
+    }
+}

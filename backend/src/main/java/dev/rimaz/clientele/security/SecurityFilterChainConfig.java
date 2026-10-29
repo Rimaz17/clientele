@@ -50,6 +50,15 @@ public class SecurityFilterChainConfig {
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, "/actuator/**")
                 .permitAll()
+                // The API documentation is public; calling a protected endpoint
+                // from Swagger UI still needs a token.
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                )
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

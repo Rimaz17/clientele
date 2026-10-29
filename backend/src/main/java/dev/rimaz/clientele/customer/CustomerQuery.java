@@ -1,5 +1,7 @@
 package dev.rimaz.clientele.customer;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -12,29 +14,40 @@ import org.springframework.data.domain.Sort;
  */
 @ValidAgeRange
 public record CustomerQuery(
+        @Parameter(description = "Page number, counted from 0", schema = @Schema(defaultValue = "0"))
         @Min(value = 0, message = "Page must be 0 or more")
         Integer page,
 
+        @Parameter(description = "Customers per page, 1 to 100", schema = @Schema(defaultValue = "20"))
         @Min(value = 1, message = "Size must be between 1 and 100")
         @Max(value = 100, message = "Size must be between 1 and 100")
         Integer size,
 
         // Keep in sync with CustomerSortField; CustomerQueryValidationTest checks it.
+        @Parameter(
+                description = "Sort field (id, name, email, age or createdAt), optionally followed by ,asc or ,desc",
+                example = "name,asc",
+                schema = @Schema(defaultValue = DEFAULT_SORT)
+        )
         @Pattern(
                 regexp = "(id|name|email|age|createdAt)(,(asc|desc))?",
                 message = "Sort must be id, name, email, age or createdAt, optionally followed by ,asc or ,desc"
         )
         String sort,
 
+        @Parameter(description = "Matches name or email, ignoring case; at most 100 characters", example = "ali")
         @Size(max = 100, message = "Search must be at most 100 characters")
         String search,
 
+        @Parameter(description = "Only customers of this gender")
         Gender gender,
 
+        @Parameter(description = "Youngest age to include, 16 to 100")
         @Min(value = 16, message = "Minimum age must be between 16 and 100")
         @Max(value = 100, message = "Minimum age must be between 16 and 100")
         Integer minAge,
 
+        @Parameter(description = "Oldest age to include, 16 to 100 and not below minAge")
         @Min(value = 16, message = "Maximum age must be between 16 and 100")
         @Max(value = 100, message = "Maximum age must be between 16 and 100")
         Integer maxAge

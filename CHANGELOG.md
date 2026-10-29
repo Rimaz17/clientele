@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Customers have a sign-up time: a `created_at` column (migration `V4`, set by the database) returned as `createdAt` in UTC. Customers created before the migration get the time it ran.
 - `GET /api/v1/customers/stats` returns dashboard statistics computed with SQL aggregations: total customers, new customers in the last 30 days, average age, the gender split, six age ranges and sign-ups per UTC month for the last 12 months, with every group present.
 - The React dashboard shows three stat cards and charts of monthly sign-ups, the gender split and the age distribution, with loading placeholders, an error state with a retry and an empty state. Every chart has a screen reader summary and a table view of its numbers.
+- Interactive API documentation: Swagger UI at `/swagger-ui/index.html` and the OpenAPI document at `/v3/api-docs`, both public. Every endpoint lists its parameters, request and response bodies with examples, and the errors it can return; protected endpoints can be called after pasting a token into **Authorize**. Set `SPRINGDOC_SWAGGERUI_ENABLED=false` to turn Swagger UI off.
 
 ### Changed
 - **BREAKING:** `GET /api/v1/customers` returns a page object, `{ content, page, size, totalElements, totalPages }`, instead of a JSON array. Both frontends are updated; other clients must read `content`.

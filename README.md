@@ -109,6 +109,19 @@ Outside the `dev` profile there is no admin until you configure one. When both v
 
 The REST API lives under `/api/v1`. Every endpoint except sign-up (`POST /customers`), login (`POST /auth/login`) and profile-image downloads needs an `Authorization: Bearer <token>` header.
 
+### Interactive API docs
+
+With the backend running, open Swagger UI at [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html). It lists every endpoint with its parameters, request and response bodies and error codes, and lets you call them. The raw OpenAPI document is at `http://localhost:8080/v3/api-docs`. Neither page needs a token.
+
+To call a protected endpoint from Swagger UI:
+
+1. Open **Authentication**, choose `POST /api/v1/auth/login`, then **Try it out**, and log in, for example with the development admin from [Logging in](#logging-in).
+2. Copy the `token` value from the response.
+3. Choose **Authorize** at the top of the page, paste the token without the `Bearer ` prefix, and confirm.
+4. Protected endpoints, marked with a lock, now send the token.
+
+Swagger UI is on by default. Set `SPRINGDOC_SWAGGERUI_ENABLED=false` to turn it off; the OpenAPI document stays available.
+
 The customer list is paginated:
 
 ```
