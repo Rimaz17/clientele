@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.ApplicationContext;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -201,6 +202,25 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
             assertThat(c.getName()).isEqualTo("Renamed");
             assertThat(c.getCreatedAt()).isEqualTo(saved.getCreatedAt());
         });
+    }
+
+    @Test
+    void canBackdateCreatedAt() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer saved = underTest.saveAndFlush(new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE));
+        Instant createdAt = Instant.parse("2025-12-24T18:30:00Z");
+
+        // When
+        underTest.backdateCreatedAt(saved.getId(), createdAt);
+
+        // Then
+        assertThat(underTest.findById(saved.getId()))
+                .hasValueSatisfying(c -> assertThat(c.getCreatedAt()).isEqualTo(createdAt));
     }
 
     @Test

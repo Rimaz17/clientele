@@ -12,9 +12,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,6 +29,7 @@ import static org.mockito.Mockito.when;
 class DevDataSeederTest {
 
     private static final String PASSWORD_HASH = "hashed-password";
+    private static final Instant NOW = Instant.parse("2026-10-30T12:00:00Z");
 
     @Mock
     private CustomerRepository customerRepository;
@@ -33,13 +39,14 @@ class DevDataSeederTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DevDataSeeder(customerRepository, passwordEncoder);
+        underTest = new DevDataSeeder(customerRepository, passwordEncoder, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     @Test
     void seedsDemoCustomersWhenThereAreNone() {
         when(customerRepository.countByRole(Role.USER)).thenReturn(0L);
         when(passwordEncoder.encode(DevDataSeeder.DEMO_PASSWORD)).thenReturn(PASSWORD_HASH);
+        when(customerRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         underTest.run(new DefaultApplicationArguments());
 
@@ -57,6 +64,27 @@ class DevDataSeederTest {
     }
 
     @Test
+    void spreadsTheSignUpDatesOverThePastMonths() {
+        when(customerRepository.countByRole(Role.USER)).thenReturn(0L);
+        when(passwordEncoder.encode(DevDataSeeder.DEMO_PASSWORD)).thenReturn(PASSWORD_HASH);
+        when(customerRepository.save(any())).thenAnswer(invocation -> {
+            Customer customer = invocation.getArgument(0);
+            customer.setId(7);
+            return customer;
+        });
+
+        underTest.run(new DefaultApplicationArguments());
+
+        ArgumentCaptor<Instant> captor = ArgumentCaptor.forClass(Instant.class);
+        verify(customerRepository, times(DevDataSeeder.DEMO_CUSTOMERS))
+                .backdateCreatedAt(eq(7), captor.capture());
+        assertThat(captor.getAllValues())
+                .allSatisfy(createdAt -> assertThat(createdAt)
+                        .isBetween(NOW.minus(DevDataSeeder.SIGNUP_SPREAD), NOW));
+        assertThat(captor.getAllValues().stream().distinct().count()).isGreaterThan(1);
+    }
+
+    @Test
     void doesNotSeedAgainOnRestart() {
         when(customerRepository.countByRole(Role.USER)).thenReturn((long) DevDataSeeder.DEMO_CUSTOMERS);
 
@@ -71,6 +99,7 @@ class DevDataSeederTest {
         when(customerRepository.countByRole(Role.USER)).thenReturn(DevDataSeeder.DEMO_CUSTOMERS - 1L);
         when(passwordEncoder.encode(DevDataSeeder.DEMO_PASSWORD)).thenReturn(PASSWORD_HASH);
         when(customerRepository.existsCustomerByEmail(anyString())).thenReturn(true, false);
+        when(customerRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         underTest.run(new DefaultApplicationArguments());
 
