@@ -13,6 +13,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -57,6 +61,27 @@ class DefaultExceptionHandlerTest {
                 new RequestValidationException("no data changes found"), request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "no data changes found");
+    }
+
+    @Test
+    void invalidRequestBodyReturns400WithSortedFieldErrors() {
+        BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "request");
+        bindingResult.addError(new FieldError("request", "name", "Name is required"));
+        bindingResult.addError(new FieldError("request", "age", "Age must be at least 16"));
+        MethodArgumentNotValidException exception = new MethodArgumentNotValidException(null, bindingResult);
+
+        ResponseEntity<ApiError> response = underTest.handleException(exception, request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        ApiError body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.statusCode()).isEqualTo(400);
+        assertThat(body.message()).isEqualTo("Request validation failed");
+        assertThat(body.path()).isEqualTo(PATH);
+        assertThat(body.errors()).containsExactly(
+                new ApiFieldError("age", "Age must be at least 16"),
+                new ApiFieldError("name", "Name is required")
+        );
     }
 
     @Test

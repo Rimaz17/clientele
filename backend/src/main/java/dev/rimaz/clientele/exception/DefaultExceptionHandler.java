@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @ControllerAdvice
@@ -44,6 +46,18 @@ public class DefaultExceptionHandler {
     public ResponseEntity<ApiError> handleException(RequestValidationException e,
                                                     HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleException(MethodArgumentNotValidException e,
+                                                    HttpServletRequest request) {
+        List<ApiFieldError> errors = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> new ApiFieldError(fieldError.getField(), fieldError.getDefaultMessage()))
+                .sorted(Comparator.comparing(ApiFieldError::field).thenComparing(ApiFieldError::message))
+                .toList();
+        return buildResponse(HttpStatus.BAD_REQUEST, "Request validation failed", request, errors);
     }
 
     // The parser's own message names internal classes, so a fixed message is returned instead.
