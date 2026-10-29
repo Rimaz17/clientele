@@ -1,5 +1,6 @@
 package dev.rimaz.clientele;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,6 +11,7 @@ public class PingPongController {
 
     record PingPong(String result){}
 
+    @SecurityRequirements
     @GetMapping("/ping")
     public PingPong getPingPong() {
         return new PingPong("Pong: %s".formatted(++COUNTER));

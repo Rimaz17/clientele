@@ -5,14 +5,18 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * The OpenAPI description served at {@code /v3/api-docs} and shown by Swagger UI.
  * <p>
  * Every operation needs the bearer token unless it says otherwise, so an
  * endpoint that forgets to declare itself public is documented as protected.
+ * Public controller methods declare an empty {@code @SecurityRequirements}.
  */
 @Configuration
 public class OpenApiConfig {
@@ -40,5 +44,16 @@ public class OpenApiConfig {
                                 .bearerFormat("JWT")
                                 .description("The token returned by login or sign-up.")))
                 .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH));
+    }
+
+    // Actuator endpoints cannot be annotated. The exposed ones (health and
+    // info) are public in SecurityFilterChainConfig, so they need no token here.
+    @Bean
+    public OpenApiCustomizer publicActuatorEndpoints() {
+        return openApi -> openApi.getPaths().forEach((path, item) -> {
+            if (path.startsWith("/actuator")) {
+                item.readOperations().forEach(operation -> operation.setSecurity(List.of()));
+            }
+        });
     }
 }

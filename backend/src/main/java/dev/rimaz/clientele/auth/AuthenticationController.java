@@ -1,5 +1,6 @@
 package dev.rimaz.clientele.auth;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
+    @SecurityRequirements
     @PostMapping("login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request) {
         AuthenticationResponse response = authenticationService.login(request);

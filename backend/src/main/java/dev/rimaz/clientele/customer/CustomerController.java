@@ -1,6 +1,7 @@
 package dev.rimaz.clientele.customer;
 
 import dev.rimaz.clientele.jwt.JWTUtil;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -36,6 +37,7 @@ public class CustomerController {
         return customerService.getCustomer(customerId);
     }
 
+    @SecurityRequirements
     @PostMapping
     public ResponseEntity<?> registerCustomer(
             @Valid @RequestBody CustomerRegistrationRequest request) {
@@ -78,6 +80,8 @@ public class CustomerController {
         customerService.uploadCustomerProfileImage(customerId, file);
     }
 
+    // Public, because <img> tags cannot send a token.
+    @SecurityRequirements
     @GetMapping(
             value = "{customerId}/profile-image",
             produces = MediaType.IMAGE_JPEG_VALUE

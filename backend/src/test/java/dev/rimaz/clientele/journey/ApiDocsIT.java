@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import static org.hamcrest.Matchers.hasSize;
+
 @IntegrationTest
 class ApiDocsIT {
 
@@ -38,6 +40,35 @@ class ApiDocsIT {
                 .jsonPath("$.components.securitySchemes.bearerAuth.scheme").isEqualTo("bearer")
                 .jsonPath("$.components.securitySchemes.bearerAuth.bearerFormat").isEqualTo("JWT")
                 .jsonPath("$.security[0].bearerAuth").isArray();
+    }
+
+    @Test
+    void marksThePublicEndpointsAsNotNeedingAToken() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/api/v1/auth/login'].post.security").value(hasSize(0))
+                .jsonPath("$.paths['/api/v1/customers'].post.security").value(hasSize(0))
+                .jsonPath("$.paths['/api/v1/customers/{customerId}/profile-image'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/ping'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/actuator/health'].get.security").value(hasSize(0))
+                .jsonPath("$.paths['/actuator/info'].get.security").value(hasSize(0));
+    }
+
+    @Test
+    void leavesProtectedEndpointsOnTheDefaultBearerRequirement() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/api/v1/customers'].get.security").doesNotExist()
+                .jsonPath("$.paths['/api/v1/customers/stats'].get.security").doesNotExist()
+                .jsonPath("$.paths['/api/v1/customers/{customerId}/profile-image'].post.security").doesNotExist();
     }
 
     @Test
