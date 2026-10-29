@@ -9,9 +9,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,13 +49,16 @@ public class DefaultExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleException(MethodArgumentNotValidException e,
+    // BindException covers invalid request bodies (its subclass
+    // MethodArgumentNotValidException) and invalid query parameters bound to an
+    // object, such as the customer list query.
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiError> handleException(BindException e,
                                                     HttpServletRequest request) {
         List<ApiFieldError> errors = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> new ApiFieldError(fieldError.getField(), fieldError.getDefaultMessage()))
+                .map(DefaultExceptionHandler::toApiFieldError)
                 .sorted(Comparator.comparing(ApiFieldError::field).thenComparing(ApiFieldError::message))
                 .toList();
         return buildResponse(HttpStatus.BAD_REQUEST, "Request validation failed", request, errors);
@@ -133,6 +137,13 @@ public class DefaultExceptionHandler {
                                                     HttpServletRequest request) {
         log.error("Unexpected error on {} {}", request.getMethod(), request.getRequestURI(), e);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_MESSAGE, request);
+    }
+
+    // A binding failure, such as "abc" for a number or an unknown enum value in a
+    // query parameter, carries Spring's conversion message, which names Java types.
+    private static ApiFieldError toApiFieldError(FieldError fieldError) {
+        String message = fieldError.isBindingFailure() ? "Invalid value" : fieldError.getDefaultMessage();
+        return new ApiFieldError(fieldError.getField(), message);
     }
 
     private ResponseEntity<ApiError> buildResponse(HttpStatus status,
