@@ -9,6 +9,7 @@ import Signup from "./components/signup/Signup";
 import AuthProvider from "./components/context/AuthContext.jsx";
 import ProtectedRoute from "./components/shared/ProtectedRoute.jsx";
 import './index.css'
+import theme from './theme.js'
 import Home from "./Home.jsx";
 
 const { ToastContainer } = createStandaloneToast();
@@ -36,7 +37,7 @@ ReactDOM
     .createRoot(document.getElementById('root'))
     .render(
         <React.StrictMode>
-            <ChakraProvider>
+            <ChakraProvider theme={theme}>
                 <AuthProvider>
                     <RouterProvider router={router} />
                 </AuthProvider>
