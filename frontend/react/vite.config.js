@@ -8,5 +8,13 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
+    // Chakra's focus lock imports the CommonJS default export of react-focus-lock,
+    // which Node resolves to an object. Letting Vite transform Chakra applies the
+    // interop that the app build uses, so dialogs and drawers work in tests.
+    server: {
+      deps: {
+        inline: [/@chakra-ui\//],
+      },
+    },
   },
 })
