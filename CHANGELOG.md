@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend deployment runs only when triggered manually.
 - Maven artifact, Docker images and compose services are renamed to `clientele`.
 - The React `.env` file is no longer tracked; copy `frontend/react/.env.example` instead.
+- The API's `.env.example` moved from the repository root to `backend/.env.example`, next to the code that reads it. For docker compose, still copy it to `.env` in the repository root.
 - The backend base package is now `dev.rimaz.clientele` and the Maven `groupId` is `dev.rimaz`.
 - Demo customers are seeded only in the `dev` profile (`clientele.seed.enabled`), and only until a fixed number exists, instead of one new random customer on every start in every profile.
 - The React app shows Update and Delete only on the signed-in user's own card, or on every card for admins, and signs users out after they delete their own account.
