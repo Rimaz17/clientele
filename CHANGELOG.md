@@ -40,3 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Angular app shows the API error message when registering, saving, updating or deleting a customer fails.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
+
+### Security
+- The JWT signing secret is no longer hard-coded. It is read from `clientele.jwt.secret` (environment variable `CLIENTELE_JWT_SECRET`); the `dev` profile, now the default, supplies a development-only secret. Any other profile refuses to start without a secret of at least 32 bytes. The previous secret is in Git history and is treated as compromised, so existing tokens stop working and users must log in again.
+- The JWT issuer and lifetime are configurable (`clientele.jwt.issuer`, default `clientele`; `clientele.jwt.expiration`, default `15d`), and tokens from another issuer are rejected.

@@ -1,0 +1,8 @@
+# Development profile, active by default when no other profile is set
+# (see spring.profiles.default in application.yml).
+
+clientele:
+  jwt:
+    # DEVELOPMENT ONLY. Never use this value in any shared or deployed environment.
+    # Other environments must provide CLIENTELE_JWT_SECRET instead.
+    secret: "dev-only-5J/WxfbC+zvOPVM0WprSw5F5EZUWPxfB9eYqJBS/FuRzwcONgxOz0G0DwhTmLrOQ"

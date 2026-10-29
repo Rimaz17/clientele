@@ -20,6 +20,10 @@ services:
     image: your-dockerhub-username/clientele-api
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/customer
+      # Outside the dev profile the API refuses to start without a JWT secret.
+      # Set CLIENTELE_JWT_SECRET in your shell or in a .env file next to this one.
+      SPRING_PROFILES_ACTIVE: docker
+      CLIENTELE_JWT_SECRET: ${CLIENTELE_JWT_SECRET:-}
     ports:
       - "8088:8080"
     networks:

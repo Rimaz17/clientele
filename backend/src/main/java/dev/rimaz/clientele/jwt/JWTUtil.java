@@ -6,20 +6,25 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
 @Service
 public class JWTUtil {
 
-    private static final String SECRET_KEY =
-            "foobar_123456789_foobar_123456789_foobar_123456789_foobar_123456789";
+    private final JwtProperties jwtProperties;
+    private final Key signingKey;
 
+    public JWTUtil(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
+        this.signingKey = Keys.hmacShaKeyFor(
+                jwtProperties.secret().getBytes(StandardCharsets.UTF_8)
+        );
+    }
 
     public String issueToken(String subject) {
         return issueToken(subject, Map.of());
@@ -37,18 +42,19 @@ public class JWTUtil {
     public String issueToken(
             String subject,
             Map<String, Object> claims) {
+        Instant now = Instant.now();
         String token = Jwts
                 .builder()
                 .setClaims(claims)
                 .setSubject(subject)
-                .setIssuer("https://amigoscode.com")
-                .setIssuedAt(Date.from(Instant.now()))
+                .setIssuer(jwtProperties.issuer())
+                .setIssuedAt(Date.from(now))
                 .setExpiration(
                         Date.from(
-                                Instant.now().plus(15, DAYS)
+                                now.plus(jwtProperties.expiration())
                         )
                 )
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
         return token;
     }
@@ -60,15 +66,12 @@ public class JWTUtil {
     private Claims getClaims(String token) {
         Claims claims = Jwts
                 .parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(signingKey)
+                .requireIssuer(jwtProperties.issuer())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims;
-    }
-
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
     public boolean isTokenValid(String jwt, String username) {

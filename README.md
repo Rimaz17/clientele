@@ -41,6 +41,38 @@ mvn spring-boot:run
 
 The API runs on `http://localhost:8080`. Flyway applies the migrations on startup.
 
+Local runs use the `dev` profile by default, which includes a development-only JWT secret, so no setup is needed.
+
+### JWT secret outside development
+
+Any profile other than `dev` (including the docker-compose API container and the AWS deployment) needs a JWT signing secret of at least 32 bytes in the `CLIENTELE_JWT_SECRET` environment variable. Without it, the API refuses to start and names the missing property.
+
+Generate a secret:
+
+```bash
+openssl rand -base64 48
+```
+
+Set it in bash:
+
+```bash
+export CLIENTELE_JWT_SECRET="<generated value>"
+```
+
+Set it in PowerShell:
+
+```powershell
+$env:CLIENTELE_JWT_SECRET = "<generated value>"
+```
+
+For docker-compose you can instead copy `.env.example` to `.env` and replace the placeholder. Never commit `.env`. For the AWS deployment, set `CLIENTELE_JWT_SECRET` as an environment property of the Elastic Beanstalk environment.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CLIENTELE_JWT_SECRET` | none (dev profile only: built-in dev secret) | Signs and verifies JWTs |
+| `CLIENTELE_JWT_EXPIRATION` | `15d` | Token lifetime |
+| `CLIENTELE_JWT_ISSUER` | `clientele` | `iss` claim written to and required on tokens |
+
 ### 3. React app
 
 ```bash
