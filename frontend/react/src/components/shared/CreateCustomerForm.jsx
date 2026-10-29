@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import {Alert, AlertIcon, Box, Button, FormLabel, Input, Select, Stack} from "@chakra-ui/react";
 import {saveCustomer} from "../../services/client.js";
 import {successNotification, errorNotification} from "../../services/notification.js";
+import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 
 const MyTextInput = ({label, ...props}) => {
     // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
@@ -74,7 +75,7 @@ const CreateCustomerForm = ({ onSuccess }) => {
                         )
                         .required('Required'),
                 })}
-                onSubmit={(customer, {setSubmitting}) => {
+                onSubmit={(customer, {setSubmitting, setErrors}) => {
                     setSubmitting(true);
                     saveCustomer(customer)
                         .then(res => {
@@ -86,9 +87,10 @@ const CreateCustomerForm = ({ onSuccess }) => {
                             onSuccess(res.headers["authorization"]);
                         }).catch(err => {
                             console.log(err);
+                            setErrors(getFieldErrors(err));
                             errorNotification(
                                 err.code,
-                                err.response.data.message
+                                getApiErrorMessage(err)
                             )
                     }).finally(() => {
                          setSubmitting(false);
