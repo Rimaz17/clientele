@@ -38,7 +38,7 @@ The backend is an N-tier application, organised by feature package (`auth`, `cus
 |---|---|
 | Security filter chain | `JWTAuthenticationFilter` validates the bearer token and sets the authenticated user. Public endpoints are registration, login, `/ping`, profile-image downloads and actuator health. |
 | Controllers | HTTP only: request mapping, status codes and response headers. |
-| Services | Business rules, such as duplicate email checks and update validation. |
+| Services | Business rules, such as duplicate email checks and update validation, and authorization: `@PreAuthorize` rules on `CustomerService` (see below). |
 | DAO | `CustomerDao` hides persistence. `CustomerService` uses the JDBC implementation (`JdbcTemplate`); authentication uses the JPA implementation (Spring Data `CustomerRepository`). |
 | Database | PostgreSQL. Flyway owns the schema, and Hibernate only validates it. |
 | File storage | `S3Service` stores profile images in S3. When `aws.s3.mock` is `true`, `FakeS3` writes them to the local disk instead. |
@@ -63,6 +63,18 @@ sequenceDiagram
 ```
 
 Tokens are signed with HS256 using the secret in `clientele.jwt.secret` and carry the configured issuer and expiry (`JwtProperties`). The `dev` profile, active by default, supplies a development-only secret; every other environment sets `CLIENTELE_JWT_SECRET` or the API does not start. An invalid, expired or foreign token leaves the request unauthenticated, so protected endpoints answer 403.
+
+## Authorization
+
+Every account has a role, `USER` or `ADMIN`, stored in the `customer.role` column and exposed as the `ROLE_USER` or `ROLE_ADMIN` authority and in the JWT `scopes` claim.
+
+| Action | Who may do it |
+|---|---|
+| List and view customers | Any signed-in user |
+| Download a profile image | Anyone (public, because `<img>` tags cannot send a token) |
+| Update, delete, upload a profile image | Admins, or the customer themselves |
+
+`CustomerService` enforces the last row with `@PreAuthorize("hasRole('ADMIN') or @customerAccess.isSelf(#customerId, authentication)")`. A denied call is answered with a `403` `ApiError`. When users change their own email, the `PUT` response carries a new token, because the old one names the old email. On startup, `AdminBootstrap` creates or promotes the configured admin, and in the `dev` profile `DevDataSeeder` adds demo customers. See [ADR 0005](adr/0005-role-based-access-and-ownership.md).
 
 ## Deployment
 
