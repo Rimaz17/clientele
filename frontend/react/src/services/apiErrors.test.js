@@ -47,6 +47,23 @@ describe('getFieldErrors', () => {
     expect(getFieldErrors(error)).toEqual({ password: 'Password is required' });
   });
 
+  it('reports a 409 conflict on the given field', () => {
+    const conflict = {
+      response: { status: 409, data: { message: 'email already taken', errors: [] } },
+    };
+
+    expect(getFieldErrors(conflict, { conflictField: 'email' })).toEqual({
+      email: 'email already taken',
+    });
+    expect(getFieldErrors(conflict)).toEqual({});
+  });
+
+  it('ignores conflictField for errors other than 409', () => {
+    const badRequest = { response: { status: 400, data: { message: 'no data changes found' } } };
+
+    expect(getFieldErrors(badRequest, { conflictField: 'email' })).toEqual({});
+  });
+
   it('returns an empty object when there are no field errors', () => {
     expect(getFieldErrors(apiError({ message: 'email already taken', errors: [] }))).toEqual({});
     expect(getFieldErrors(new Error('Network Error'))).toEqual({});

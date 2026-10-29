@@ -5,11 +5,16 @@ export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) =>
   error?.response?.data?.message ?? fallback;
 
 // Turns the ApiError `errors` list into a Formik errors object, keeping the
-// first message for each field.
-export const getFieldErrors = (error) => {
+// first message for each field. A 409 Conflict has no field list, so when
+// `conflictField` is given its message is shown on that field instead.
+export const getFieldErrors = (error, { conflictField } = {}) => {
   const fieldErrors = error?.response?.data?.errors ?? [];
-  return fieldErrors.reduce(
-    (errors, { field, message }) => (field in errors ? errors : { ...errors, [field]: message }),
+  const errors = fieldErrors.reduce(
+    (result, { field, message }) => (field in result ? result : { ...result, [field]: message }),
     {},
   );
+  if (conflictField && error?.response?.status === 409) {
+    return { ...errors, [conflictField]: getApiErrorMessage(error) };
+  }
+  return errors;
 };
