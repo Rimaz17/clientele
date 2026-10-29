@@ -84,6 +84,23 @@ class ApiDocsIT {
     }
 
     @Test
+    void documentsEveryQueryParameterOfTheCustomerList() throws Exception {
+        JsonNode parameters = apiDocs().at("/paths/~1api~1v1~1customers/get/parameters");
+
+        List<String> names = new ArrayList<>();
+        parameters.forEach(parameter -> {
+            names.add(parameter.path("name").asText());
+            assertThat(parameter.path("in").asText()).isEqualTo("query");
+            assertThat(parameter.path("required").asBoolean()).isFalse();
+            assertThat(parameter.path("description").asText()).isNotBlank();
+        });
+        assertThat(names).containsExactly("page", "size", "sort", "search", "gender", "minAge", "maxAge");
+        assertThat(parameter(parameters, "size").at("/schema/maximum").asInt()).isEqualTo(100);
+        assertThat(parameter(parameters, "sort").at("/schema/default").asText()).isEqualTo("createdAt,desc");
+        assertThat(parameter(parameters, "gender").at("/schema/enum").toString()).isEqualTo("[\"MALE\",\"FEMALE\"]");
+    }
+
+    @Test
     void marksThePublicEndpointsAsNotNeedingAToken() {
         webTestClient.get()
                 .uri("/v3/api-docs")
@@ -159,6 +176,15 @@ class ApiDocsIT {
                 .is3xxRedirection()
                 .expectHeader()
                 .valueMatches("Location", ".*/swagger-ui/index.html.*");
+    }
+
+    private static JsonNode parameter(JsonNode parameters, String name) {
+        for (JsonNode parameter : parameters) {
+            if (parameter.path("name").asText().equals(name)) {
+                return parameter;
+            }
+        }
+        throw new AssertionError("No parameter " + name);
     }
 
     private JsonNode apiDocs() throws Exception {
