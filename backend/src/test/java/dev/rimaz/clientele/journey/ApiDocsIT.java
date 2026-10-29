@@ -104,6 +104,27 @@ class ApiDocsIT {
     }
 
     @Test
+    void describesTheRequestBodiesWithExamplesAndRules() throws Exception {
+        JsonNode schemas = apiDocs().path("components").path("schemas");
+
+        JsonNode registration = schemas.path("CustomerRegistrationRequest");
+        assertThat(registration.path("required").toString())
+                .contains("name", "email", "password", "age", "gender");
+        assertThat(registration.at("/properties/email/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(registration.at("/properties/name/maxLength").asInt()).isEqualTo(15);
+        assertThat(registration.at("/properties/age/minimum").asInt()).isEqualTo(16);
+        assertThat(registration.at("/properties/age/maximum").asInt()).isEqualTo(100);
+
+        JsonNode update = schemas.path("CustomerUpdateRequest");
+        assertThat(update.has("required")).isFalse();
+        assertThat(update.at("/properties/email/example").asText()).isEqualTo("alex.jones@example.com");
+
+        JsonNode login = schemas.path("AuthenticationRequest");
+        assertThat(login.at("/properties/username/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(login.at("/properties/password/example").asText()).isEqualTo("secret-pw");
+    }
+
+    @Test
     void marksThePublicEndpointsAsNotNeedingAToken() {
         webTestClient.get()
                 .uri("/v3/api-docs")
