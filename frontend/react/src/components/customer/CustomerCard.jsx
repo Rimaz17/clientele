@@ -18,6 +18,7 @@ import {
 import {useRef} from 'react'
 import {customerProfilePictureUrl, deleteCustomer} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
+import {getApiErrorMessage} from "../../services/apiErrors.js";
 import UpdateCustomerDrawer from "./UpdateCustomerDrawer.jsx";
 
 export default function CardWithImage({id, name, email, age, gender, fetchCustomers}) {
@@ -119,8 +120,8 @@ export default function CardWithImage({id, name, email, age, gender, fetchCustom
                                             }).catch(err => {
                                                 console.log(err);
                                                 errorNotification(
-                                                    err.code,
-                                                    err.response.data.message
+                                                    "Could not delete customer",
+                                                    getApiErrorMessage(err)
                                                 )
                                             }).finally(() => {
                                                 onClose()

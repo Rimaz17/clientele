@@ -44,9 +44,9 @@ public class AuthenticationIT {
         Faker faker = new Faker();
         Name fakerName = faker.name();
 
-        String name = fakerName.fullName();
+        String name = fakerName.firstName();
         String email = fakerName.lastName() + "-" + UUID.randomUUID() + "@amigoscode.com";
-        int age = RANDOM.nextInt(1, 100);
+        int age = RANDOM.nextInt(16, 101);
 
         Gender gender = age % 2 == 0 ? Gender.MALE : Gender.FEMALE;
 

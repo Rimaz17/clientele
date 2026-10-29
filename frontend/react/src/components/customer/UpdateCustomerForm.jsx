@@ -1,32 +1,38 @@
-import {Form, Formik, useField} from 'formik';
+import {Form, Formik} from 'formik';
 import * as Yup from 'yup';
-import {Alert, AlertIcon, Box, Button, FormLabel, Image, Input, Stack, VStack} from "@chakra-ui/react";
+import {Avatar, Box, Button, Stack, Text, VStack} from "@chakra-ui/react";
+import {TextField} from "../shared/FormFields.jsx";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
+import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
 
-const MyTextInput = ({label, ...props}) => {
-    // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
-    // which we can spread on <input>. We can use field meta to show an error
-    // message if the field is invalid and it has been touched (i.e. visited)
-    const [field, meta] = useField(props);
-    return (
-        <Box>
-            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-            <Input className="text-input" {...field} {...props} />
-            {meta.touched && meta.error ? (
-                <Alert className="error" status={"error"} mt={2}>
-                    <AlertIcon/>
-                    {meta.error}
-                </Alert>
-            ) : null}
-        </Box>
-    );
-};
+// Mirrors the image types and the 10 MB upload limit the API accepts.
+const ACCEPTED_IMAGE_TYPES = {
+    "image/jpeg": [],
+    "image/png": [],
+    "image/webp": []
+}
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024
+
+const rejectionMessage = (fileRejections) => {
+    const code = fileRejections[0]?.errors[0]?.code
+    if (code === "file-too-large") {
+        return "The picture must be 10 MB or smaller"
+    }
+    if (code === "too-many-files") {
+        return "Choose one picture at a time"
+    }
+    return "Choose a JPEG, PNG or WebP image"
+}
 
 const MyDropzone = ({ customerId, fetchCustomers }) => {
-    const onDrop = useCallback(acceptedFiles => {
+    const onDrop = useCallback((acceptedFiles, fileRejections) => {
+        if (acceptedFiles.length === 0) {
+            errorNotification("Upload failed", rejectionMessage(fileRejections))
+            return
+        }
         const formData = new FormData();
         formData.append("file", acceptedFiles[0])
 
@@ -34,42 +40,50 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             customerId,
             formData
         ).then(() => {
-            successNotification("Success", "Profile picture uploaded")
+            successNotification("Profile picture updated", "The new picture is now shown")
             fetchCustomers()
-        }).catch(() => {
-            errorNotification("Error", "Profile picture failed upload")
+        }).catch(err => {
+            errorNotification("Upload failed", getApiErrorMessage(err, "The profile picture could not be uploaded"))
         })
     }, [customerId, fetchCustomers])
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+        onDrop,
+        accept: ACCEPTED_IMAGE_TYPES,
+        maxSize: MAX_IMAGE_SIZE,
+        maxFiles: 1
+    })
 
     return (
-        <Box {...getRootProps()}
+        <Box {...getRootProps({role: "button", "aria-label": "Upload a new profile picture"})}
              w={'100%'}
              textAlign={'center'}
              border={'dashed'}
              borderColor={'gray.200'}
              borderRadius={'3xl'}
              p={6}
-             rounded={'md'}>
+             rounded={'md'}
+             cursor={'pointer'}
+             _focusVisible={{boxShadow: 'outline', outline: 'none'}}>
             <input {...getInputProps()} />
-            {
-                isDragActive ?
-                    <p>Drop the picture here ...</p> :
-                    <p>Drag &apos;n&apos; drop picture here, or click to select picture</p>
-            }
+            <Text>
+                {isDragActive ? "Drop the picture here" : "Drag a picture here, or click to choose one"}
+            </Text>
+            <Text fontSize={'sm'} color={'gray.600'} mt={1}>
+                JPEG, PNG or WebP, up to 10 MB
+            </Text>
         </Box>
     )
 }
 
-// And now we can use these
 const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
     return (
         <>
             <VStack spacing={'5'} mb={'5'}>
-                <Image
-                    borderRadius={'full'}
+                {/* Avatar falls back to the customer's initials when there is no picture yet. */}
+                <Avatar
                     boxSize={'150px'}
-                    objectFit={'cover'}
+                    size={'2xl'}
+                    name={initialValues.name}
                     src={customerProfilePictureUrl(customerId)}
                 />
                 <MyDropzone
@@ -84,14 +98,15 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                         .max(15, 'Must be 15 characters or less')
                         .required('Required'),
                     email: Yup.string()
-                        .email('Must be 20 characters or less')
+                        .email('Must be a valid email address')
+                        .max(254, 'Must be 254 characters or less')
                         .required('Required'),
                     age: Yup.number()
                         .min(16, 'Must be at least 16 years of age')
-                        .max(100, 'Must be less than 100 years of age')
+                        .max(100, 'Must be 100 years of age or younger')
                         .required(),
                 })}
-                onSubmit={(updatedCustomer, {setSubmitting}) => {
+                onSubmit={(updatedCustomer, {setSubmitting, setErrors}) => {
                     setSubmitting(true);
                     updateCustomer(customerId, updatedCustomer)
                         .then(res => {
@@ -103,9 +118,10 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                             fetchCustomers();
                         }).catch(err => {
                         console.log(err);
+                        setErrors(getFieldErrors(err, {conflictField: "email"}));
                         errorNotification(
-                            err.code,
-                            err.response.data.message
+                            "Could not update customer",
+                            getApiErrorMessage(err)
                         )
                     }).finally(() => {
                         setSubmitting(false);
@@ -113,23 +129,26 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                 }}
             >
                 {({isValid, isSubmitting, dirty}) => (
-                    <Form>
+                    <Form noValidate>
                         <Stack spacing={"24px"}>
-                            <MyTextInput
+                            <TextField
+                                isRequired
                                 label="Name"
                                 name="name"
                                 type="text"
                                 placeholder="Jane"
                             />
 
-                            <MyTextInput
+                            <TextField
+                                isRequired
                                 label="Email Address"
                                 name="email"
                                 type="email"
                                 placeholder="jane@formik.com"
                             />
 
-                            <MyTextInput
+                            <TextField
+                                isRequired
                                 label="Age"
                                 name="age"
                                 type="number"

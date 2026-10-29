@@ -1,42 +1,20 @@
 import {
-    Alert,
-    AlertIcon,
-    Box,
     Button,
     Flex,
-    FormLabel,
     Heading,
     Image,
-    Input,
     Link,
     Stack,
     Text,
 } from '@chakra-ui/react';
-import {Formik, Form, useField} from "formik";
+import {Formik, Form} from "formik";
+import {TextField} from "../shared/FormFields.jsx";
 import * as Yup from 'yup';
 import {useAuth} from "../context/AuthContext.jsx";
 import {errorNotification} from "../../services/notification.js";
+import {getApiErrorMessage} from "../../services/apiErrors.js";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
-
-const MyTextInput = ({label, ...props}) => {
-    // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
-    // which we can spread on <input>. We can use field meta to show an error
-    // message if the field is invalid and it has been touched (i.e. visited)
-    const [field, meta] = useField(props);
-    return (
-        <Box>
-            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-            <Input className="text-input" {...field} {...props} />
-            {meta.touched && meta.error ? (
-                <Alert className="error" status={"error"} mt={2}>
-                    <AlertIcon/>
-                    {meta.error}
-                </Alert>
-            ) : null}
-        </Box>
-    );
-};
 
 const LoginForm = () => {
     const { login } = useAuth();
@@ -63,8 +41,8 @@ const LoginForm = () => {
                     console.log("Successfully logged in");
                 }).catch(err => {
                     errorNotification(
-                        err.code,
-                        err.response.data.message
+                        "Login failed",
+                        getApiErrorMessage(err)
                     )
                 }).finally(() => {
                     setSubmitting(false);
@@ -72,15 +50,17 @@ const LoginForm = () => {
             }}>
 
             {({isValid, isSubmitting}) => (
-                <Form>
+                <Form noValidate>
                     <Stack mt={15} spacing={15}>
-                        <MyTextInput
+                        <TextField
+                            isRequired
                             label={"Email"}
                             name={"username"}
                             type={"email"}
                             placeholder={"hello@amigoscode.com"}
                         />
-                        <MyTextInput
+                        <TextField
+                            isRequired
                             label={"Password"}
                             name={"password"}
                             type={"password"}
