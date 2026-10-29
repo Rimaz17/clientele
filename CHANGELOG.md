@@ -19,8 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin bootstrap: when `CLIENTELE_BOOTSTRAP_ADMIN_EMAIL` and `CLIENTELE_BOOTSTRAP_ADMIN_PASSWORD` are set, startup creates that admin or promotes the existing account. The `dev` profile includes a development-only admin (`admin@clientele.dev`).
 - When users change their own email, the update response carries a new token, and both frontends store it so the user stays signed in.
 - The React customer cards mark admins and the signed-in user's own card, and the header shows the role as Admin or User.
+- The customer list can be paged, searched, filtered and sorted: `GET /api/v1/customers?page=0&size=20&sort=name,asc&search=ali&gender=FEMALE&minAge=18&maxAge=40`. Search matches name or email, ignoring case; invalid parameters return `400` with field errors.
+- The React customers page has a debounced search box, gender and age filters, a sort selector, page numbers with a page-size selector and a "Showing 21–40 of 132" summary. All of it is kept in the URL, so refresh, shared links and the back button work.
+- The React customers page tells an empty database apart from a search with no results, which offers "Clear filters".
 
 ### Changed
+- **BREAKING:** `GET /api/v1/customers` returns a page object, `{ content, page, size, totalElements, totalPages }`, instead of a JSON array. Both frontends are updated; other clients must read `content`.
+- The customer list is no longer silently cut off at 1000 rows.
+- The `dev` profile keeps 50 demo customers, so the list has several pages.
 - Backend CI runs on every pull request to `main`, with Maven caching and least-privilege permissions.
 - Backend deployment runs only when triggered manually.
 - Maven artifact, Docker images and compose services are renamed to `clientele`.

@@ -105,6 +105,27 @@ Outside the `dev` profile there is no admin until you configure one. When both v
 | `CLIENTELE_BOOTSTRAP_ADMIN_EMAIL` | none (dev profile: `admin@clientele.dev`) | Email of the admin account |
 | `CLIENTELE_BOOTSTRAP_ADMIN_PASSWORD` | none (dev profile: `admin-password`) | Its password, at least 8 characters |
 
+## API
+
+The REST API lives under `/api/v1`. Every endpoint except sign-up (`POST /customers`), login (`POST /auth/login`) and profile-image downloads needs an `Authorization: Bearer <token>` header.
+
+The customer list is paginated:
+
+```
+GET /api/v1/customers?page=0&size=20&sort=name,asc&search=ali&gender=FEMALE&minAge=18&maxAge=40
+```
+
+| Parameter | Rules | Default |
+|---|---|---|
+| `page` | 0 or more | `0` |
+| `size` | 1 to 100 | `20` |
+| `sort` | `id`, `name`, `email` or `age`, optionally followed by `,asc` or `,desc` | `id,asc` |
+| `search` | matches name or email, ignoring case; at most 100 characters | none |
+| `gender` | `MALE` or `FEMALE` | none |
+| `minAge`, `maxAge` | 16 to 100, inclusive; `minAge` must not be greater than `maxAge` | none |
+
+The response is `{ "content": [...], "page": 0, "size": 20, "totalElements": 132, "totalPages": 7 }`. Invalid parameters return `400` with an `errors` list.
+
 ## Tests
 
 ```bash
