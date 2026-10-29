@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The customer list can be paged, searched, filtered and sorted: `GET /api/v1/customers?page=0&size=20&sort=name,asc&search=ali&gender=FEMALE&minAge=18&maxAge=40`. Search matches name or email, ignoring case; invalid parameters return `400` with field errors.
 - The React customers page has a debounced search box, gender and age filters, a sort selector, page numbers with a page-size selector and a "Showing 21–40 of 132" summary. All of it is kept in the URL, so refresh, shared links and the back button work.
 - The React customers page tells an empty database apart from a search with no results, which offers "Clear filters".
+- Customers have a sign-up time: a `created_at` column (migration `V4`, set by the database) returned as `createdAt` in UTC. Customers created before the migration get the time it ran.
+- `GET /api/v1/customers/stats` returns dashboard statistics computed with SQL aggregations: total customers, new customers in the last 30 days, average age, the gender split, six age ranges and sign-ups per UTC month for the last 12 months, with every group present.
+- The React dashboard shows three stat cards and charts of monthly sign-ups, the gender split and the age distribution, with loading placeholders, an error state with a retry and an empty state. Every chart has a screen reader summary and a table view of its numbers.
 
 ### Changed
 - **BREAKING:** `GET /api/v1/customers` returns a page object, `{ content, page, size, totalElements, totalPages }`, instead of a JSON array. Both frontends are updated; other clients must read `content`.
@@ -35,9 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Demo customers are seeded only in the `dev` profile (`clientele.seed.enabled`), and only until a fixed number exists, instead of one new random customer on every start in every profile.
 - The React app shows Update and Delete only on the signed-in user's own card, or on every card for admins, and signs users out after they delete their own account.
 - A `403` on a change now says the user can only change their own account, in both frontends.
+- The customer list is sorted newest first by default (`createdAt,desc` instead of `id,asc`), and `createdAt` can be used in `sort`. The React sort selector offers "Newest first" and "Oldest first" instead of the id-based options.
+- Demo customers in the `dev` profile get sign-up dates spread over the past year.
+- The React sidebar's first link is now "Dashboard", the header shows the Clientele name instead of the course logo and a "Logo" placeholder, and the browser tab is titled Clientele.
 
 ### Removed
 - The unused in-memory customer DAO.
+- React controls that did nothing: the sidebar "Settings" link, the user menu's "Profile", "Settings" and "Billing" items, and the header bell button.
 
 ### Fixed
 - Registering or updating with an email that is already taken returns `409 Conflict` instead of `500`.
@@ -51,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A taken email is shown under the email field, and error toasts have readable titles instead of HTTP client codes.
 - The profile picture dropzone has an accessible name and focus ring, lists the accepted types and the 10 MB limit, and explains rejected files; a customer without a picture shows their initials.
 - The Angular app shows the API error message when registering, saving, updating or deleting a customer fails.
+- React sidebar links show a keyboard focus ring, mark the current page, keep AA contrast on hover and navigate without reloading the app.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
 
