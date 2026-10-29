@@ -86,6 +86,27 @@ class ApiDocsIT {
                 .jsonPath("$.security[0].bearerAuth").isArray();
     }
 
+    // Catches a new endpoint that was added without OpenAPI annotations.
+    @Test
+    void everyApiOperationHasANamedTagAndASummary() throws Exception {
+        JsonNode paths = apiDocs().path("paths");
+        List<String> checked = new ArrayList<>();
+        paths.fields().forEachRemaining(path -> {
+            if (path.getKey().startsWith("/actuator")) {
+                return;
+            }
+            path.getValue().fields().forEachRemaining(operation -> {
+                String name = operation.getKey() + " " + path.getKey();
+                JsonNode tags = operation.getValue().path("tags");
+                assertThat(tags.size()).as("%s has one tag", name).isEqualTo(1);
+                assertThat(tags.get(0).asText()).as("%s has a named tag", name).doesNotContain("-controller");
+                assertThat(operation.getValue().path("summary").asText()).as("%s has a summary", name).isNotBlank();
+                checked.add(name);
+            });
+        });
+        assertThat(checked).hasSize(10);
+    }
+
     @Test
     void documentsEveryQueryParameterOfTheCustomerList() throws Exception {
         JsonNode parameters = apiDocs().at("/paths/~1api~1v1~1customers/get/parameters");
