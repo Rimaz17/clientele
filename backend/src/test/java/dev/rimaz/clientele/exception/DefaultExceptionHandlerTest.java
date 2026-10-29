@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,6 +88,14 @@ class DefaultExceptionHandlerTest {
                 new MissingServletRequestPartException("file"), request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "Required part 'file' is missing");
+    }
+
+    @Test
+    void maxUploadSizeExceededReturns413() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new MaxUploadSizeExceededException(10 * 1024 * 1024), request);
+
+        assertApiError(response, HttpStatus.PAYLOAD_TOO_LARGE, "Uploaded file is too large");
     }
 
     @Test
