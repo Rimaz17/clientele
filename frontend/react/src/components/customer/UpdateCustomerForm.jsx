@@ -7,6 +7,7 @@ import {errorNotification, successNotification} from "../../services/notificatio
 import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
+import {useAuth} from "../context/AuthContext.jsx";
 
 // Mirrors the image types and the 10 MB upload limit the API accepts.
 const ACCEPTED_IMAGE_TYPES = {
@@ -76,6 +77,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
 }
 
 const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
+    const { storeToken } = useAuth()
     return (
         <>
             <VStack spacing={'5'} mb={'5'}>
@@ -111,6 +113,12 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                     updateCustomer(customerId, updatedCustomer)
                         .then(res => {
                             console.log(res);
+                            // Users who change their own email get a new token,
+                            // because the old one names the old email.
+                            const newToken = res.headers?.authorization
+                            if (newToken) {
+                                storeToken(newToken)
+                            }
                             successNotification(
                                 "Customer updated",
                                 `${updatedCustomer.name} was successfully updated`
