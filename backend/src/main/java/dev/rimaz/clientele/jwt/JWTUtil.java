@@ -67,6 +67,7 @@ public class JWTUtil {
         Claims claims = Jwts
                 .parserBuilder()
                 .setSigningKey(signingKey)
+                .requireIssuer(jwtProperties.issuer())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

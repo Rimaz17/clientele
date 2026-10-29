@@ -2,6 +2,7 @@ package dev.rimaz.clientele.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -70,6 +71,14 @@ class JWTUtilTest {
         Duration lifetime = Duration.between(
                 claims.getIssuedAt().toInstant(), claims.getExpiration().toInstant());
         assertThat(lifetime).isEqualTo(Duration.ofDays(15));
+    }
+
+    @Test
+    void tokenFromAnotherIssuerIsRejected() {
+        String foreignToken = jwtUtil(SECRET, Duration.ofDays(15), "https://example.com").issueToken(SUBJECT);
+
+        assertThatThrownBy(() -> underTest.getSubject(foreignToken))
+                .isInstanceOf(IncorrectClaimException.class);
     }
 
     private static JWTUtil jwtUtil(String secret, Duration expiration, String issuer) {
