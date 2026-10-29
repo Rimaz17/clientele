@@ -26,8 +26,19 @@ const MyTextInput = ({label, ...props}) => {
     );
 };
 
+// Mirrors the image types the API accepts for profile pictures.
+const ACCEPTED_IMAGE_TYPES = {
+    "image/jpeg": [],
+    "image/png": [],
+    "image/webp": []
+}
+
 const MyDropzone = ({ customerId, fetchCustomers }) => {
     const onDrop = useCallback(acceptedFiles => {
+        if (acceptedFiles.length === 0) {
+            errorNotification("Error", "Choose a JPEG, PNG or WebP image")
+            return
+        }
         const formData = new FormData();
         formData.append("file", acceptedFiles[0])
 
@@ -37,11 +48,15 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
         ).then(() => {
             successNotification("Success", "Profile picture uploaded")
             fetchCustomers()
-        }).catch(() => {
-            errorNotification("Error", "Profile picture failed upload")
+        }).catch(err => {
+            errorNotification("Error", getApiErrorMessage(err, "Profile picture failed upload"))
         })
     }, [customerId, fetchCustomers])
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+        onDrop,
+        accept: ACCEPTED_IMAGE_TYPES,
+        maxFiles: 1
+    })
 
     return (
         <Box {...getRootProps()}
