@@ -21,7 +21,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/customer
       # Outside the dev profile the API refuses to start without a JWT secret.
-      # Set CLIENTELE_JWT_SECRET in your shell or in a .env file next to this one.
+      # Set CLIENTELE_JWT_SECRET in your shell or in a .env file next to this one
+      # (backend/.env.example lists the variables).
       SPRING_PROFILES_ACTIVE: docker
       CLIENTELE_JWT_SECRET: ${CLIENTELE_JWT_SECRET:-}
     ports:

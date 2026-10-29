@@ -65,7 +65,7 @@ Set it in PowerShell:
 $env:CLIENTELE_JWT_SECRET = "<generated value>"
 ```
 
-For docker-compose you can instead copy `.env.example` to `.env` and replace the placeholder. Never commit `.env`. For the AWS deployment, set `CLIENTELE_JWT_SECRET` as an environment property of the Elastic Beanstalk environment.
+For docker-compose you can instead copy `backend/.env.example` to `.env` in the repository root, next to `docker-compose.yml`, and replace the placeholder. Never commit `.env`. For the AWS deployment, set `CLIENTELE_JWT_SECRET` as an environment property of the Elastic Beanstalk environment.
 
 | Variable | Default | Purpose |
 |---|---|---|
