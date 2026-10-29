@@ -32,6 +32,14 @@ class DefaultExceptionHandlerTest {
     }
 
     @Test
+    void duplicateResourceReturns409() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new DuplicateResourceException("email already taken"), request);
+
+        assertApiError(response, HttpStatus.CONFLICT, "email already taken");
+    }
+
+    @Test
     void insufficientAuthenticationReturns403() {
         ResponseEntity<ApiError> response = underTest.handleException(
                 new InsufficientAuthenticationException("Full authentication is required"), request);

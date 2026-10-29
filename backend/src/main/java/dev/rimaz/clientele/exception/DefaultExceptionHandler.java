@@ -19,6 +19,12 @@ public class DefaultExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, e.getMessage(), request);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiError> handleException(DuplicateResourceException e,
+                                                    HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, e.getMessage(), request);
+    }
+
     @ExceptionHandler(InsufficientAuthenticationException.class)
     public ResponseEntity<ApiError> handleException(InsufficientAuthenticationException e,
                                                     HttpServletRequest request) {
