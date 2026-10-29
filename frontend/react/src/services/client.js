@@ -17,6 +17,14 @@ export const getCustomers = async (params = {}) =>
         }
     )
 
+// Aggregates for the dashboard: totals, gender split, age ranges and sign-ups
+// per month (see GET /api/v1/customers/stats).
+export const getCustomerStats = async () =>
+    axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/customers/stats`,
+        getAuthConfig()
+    )
+
 export const saveCustomer = async (customer) =>
     axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/customers`,
