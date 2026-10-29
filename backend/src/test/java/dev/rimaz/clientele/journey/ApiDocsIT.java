@@ -25,6 +25,22 @@ class ApiDocsIT {
     }
 
     @Test
+    void describesTheApiAndItsBearerToken() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.info.title").isEqualTo("Clientele API")
+                .jsonPath("$.info.version").isEqualTo("v1")
+                .jsonPath("$.components.securitySchemes.bearerAuth.type").isEqualTo("http")
+                .jsonPath("$.components.securitySchemes.bearerAuth.scheme").isEqualTo("bearer")
+                .jsonPath("$.components.securitySchemes.bearerAuth.bearerFormat").isEqualTo("JWT")
+                .jsonPath("$.security[0].bearerAuth").isArray();
+    }
+
+    @Test
     void servesSwaggerUiWithoutAToken() {
         webTestClient.get()
                 .uri("/swagger-ui/index.html")
