@@ -20,6 +20,9 @@ import {
 
 export const INPUT_DEBOUNCE_MS = 300;
 
+// gray.600 keeps placeholder text above 4.5:1 on white; Chakra's gray.500 is about 4:1.
+const PLACEHOLDER_STYLE = { color: 'gray.600' };
+
 const ageText = (age) => (age === undefined ? '' : String(age));
 const toAge = (text) => (text === '' ? undefined : Number(text));
 
@@ -114,6 +117,7 @@ const CustomerListToolbar = ({ params, onChange }) => {
             maxLength={MAX_SEARCH_LENGTH}
             onChange={(event) => setSearch(event.target.value)}
             bg="white"
+            _placeholder={PLACEHOLDER_STYLE}
           />
         </InputGroup>
       </FormControl>
@@ -131,35 +135,40 @@ const CustomerListToolbar = ({ params, onChange }) => {
         </Select>
       </FormControl>
 
-      <FormControl id="customer-min-age" flex="0 1 7rem" isInvalid={Boolean(minAgeError)}>
-        <FormLabel fontSize="sm">Min age</FormLabel>
-        <Input
-          type="number"
-          inputMode="numeric"
-          min={MIN_AGE}
-          max={MAX_AGE}
-          placeholder={String(MIN_AGE)}
-          value={ages.minAge}
-          onChange={(event) => setAges((current) => ({ ...current, minAge: event.target.value }))}
-          bg="white"
-        />
-        <FormErrorMessage color="red.600">{minAgeError}</FormErrorMessage>
-      </FormControl>
+      {/* The two ages wrap together, so the range never splits across rows. */}
+      <Flex gap={4} flex="0 1 15rem" minW="12rem">
+        <FormControl id="customer-min-age" flex="1" isInvalid={Boolean(minAgeError)}>
+          <FormLabel fontSize="sm">Min age</FormLabel>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={MIN_AGE}
+            max={MAX_AGE}
+            placeholder={String(MIN_AGE)}
+            value={ages.minAge}
+            onChange={(event) => setAges((current) => ({ ...current, minAge: event.target.value }))}
+            bg="white"
+            _placeholder={PLACEHOLDER_STYLE}
+          />
+          <FormErrorMessage color="red.600">{minAgeError}</FormErrorMessage>
+        </FormControl>
 
-      <FormControl id="customer-max-age" flex="0 1 7rem" isInvalid={Boolean(maxAgeError)}>
-        <FormLabel fontSize="sm">Max age</FormLabel>
-        <Input
-          type="number"
-          inputMode="numeric"
-          min={MIN_AGE}
-          max={MAX_AGE}
-          placeholder={String(MAX_AGE)}
-          value={ages.maxAge}
-          onChange={(event) => setAges((current) => ({ ...current, maxAge: event.target.value }))}
-          bg="white"
-        />
-        <FormErrorMessage color="red.600">{maxAgeError}</FormErrorMessage>
-      </FormControl>
+        <FormControl id="customer-max-age" flex="1" isInvalid={Boolean(maxAgeError)}>
+          <FormLabel fontSize="sm">Max age</FormLabel>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={MIN_AGE}
+            max={MAX_AGE}
+            placeholder={String(MAX_AGE)}
+            value={ages.maxAge}
+            onChange={(event) => setAges((current) => ({ ...current, maxAge: event.target.value }))}
+            bg="white"
+            _placeholder={PLACEHOLDER_STYLE}
+          />
+          <FormErrorMessage color="red.600">{maxAgeError}</FormErrorMessage>
+        </FormControl>
+      </Flex>
 
       <FormControl id="customer-sort" flex="0 1 13rem">
         <FormLabel fontSize="sm">Sort by</FormLabel>
