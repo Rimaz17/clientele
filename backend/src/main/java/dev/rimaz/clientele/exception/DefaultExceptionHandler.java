@@ -1,6 +1,8 @@
 package dev.rimaz.clientele.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,6 +22,10 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class DefaultExceptionHandler {
+
+    private static final String UNEXPECTED_ERROR_MESSAGE = "An unexpected error occurred";
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleException(ResourceNotFoundException e,
@@ -105,10 +111,13 @@ public class DefaultExceptionHandler {
         return buildResponse(HttpStatus.UNAUTHORIZED, e.getMessage(), request);
     }
 
+    // Unexpected errors are logged in full but reported to the client without
+    // internal details such as exception messages, SQL or class names.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleException(Exception e,
                                                     HttpServletRequest request) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), request);
+        log.error("Unexpected error on {} {}", request.getMethod(), request.getRequestURI(), e);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_MESSAGE, request);
     }
 
     private ResponseEntity<ApiError> buildResponse(HttpStatus status,

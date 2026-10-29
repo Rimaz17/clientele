@@ -146,6 +146,14 @@ class DefaultExceptionHandlerTest {
         assertApiError(response, HttpStatus.UNAUTHORIZED, "Bad credentials");
     }
 
+    @Test
+    void unexpectedExceptionReturns500WithoutInternalDetails() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new IllegalStateException("PreparedStatementCallback; bad SQL grammar"), request);
+
+        assertApiError(response, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+    }
+
     private void assertApiError(ResponseEntity<ApiError> response,
                                 HttpStatus expectedStatus,
                                 String expectedMessage) {
