@@ -22,11 +22,10 @@ import {
 } from '@chakra-ui/react';
 
 import {
+    FiBarChart2,
     FiBell,
     FiChevronDown,
-    FiHome,
     FiMenu,
-    FiSettings,
     FiUsers
 } from 'react-icons/fi';
 import {useAuth} from "../context/AuthContext.jsx";
@@ -38,9 +37,8 @@ const roleLabel = (role) => {
 };
 
 const LinkItems = [
-    {name: 'Home', route: '/dashboard', icon: FiHome},
+    {name: 'Dashboard', route: '/dashboard', icon: FiBarChart2},
     {name: 'Customers', route: '/dashboard/customers',  icon: FiUsers},
-    {name: 'Settings', route: '/dashboard/settings', icon: FiSettings},
 ];
 
 export default function SidebarWithHeader({children}) {
