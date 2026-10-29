@@ -57,6 +57,7 @@ const CreateCustomerForm = ({ onSuccess }) => {
                         .required('Required'),
                     email: Yup.string()
                         .email('Must be a valid email address')
+                        .max(254, 'Must be 254 characters or less')
                         .required('Required'),
                     age: Yup.number()
                         .min(16, 'Must be at least 16 years of age')
