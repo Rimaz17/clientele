@@ -2,6 +2,7 @@ package dev.rimaz.clientele.customer;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 @Transactional
 public interface CustomerRepository
-        extends JpaRepository<Customer, Integer> {
+        extends JpaRepository<Customer, Integer>, JpaSpecificationExecutor<Customer> {
 
     boolean existsCustomerByEmail(String email);
     boolean existsCustomerById(Integer id);

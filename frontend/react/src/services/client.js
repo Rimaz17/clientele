@@ -6,10 +6,15 @@ const getAuthConfig = () => ({
     }
 })
 
-export const getCustomers = async () =>
+// Returns one page: { content, page, size, totalElements, totalPages }.
+// params: page (0-based), size, sort, search, gender, minAge, maxAge.
+export const getCustomers = async (params = {}) =>
     axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/customers`,
-        getAuthConfig()
+        {
+            ...getAuthConfig(),
+            params
+        }
     )
 
 export const saveCustomer = async (customer) =>

@@ -4,10 +4,12 @@ import dev.rimaz.clientele.customer.CustomerDTO;
 import dev.rimaz.clientele.customer.CustomerRegistrationRequest;
 import dev.rimaz.clientele.customer.CustomerUpdateRequest;
 import dev.rimaz.clientele.customer.Gender;
+import dev.rimaz.clientele.customer.PageResponse;
 import dev.rimaz.clientele.exception.ApiError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -150,14 +152,16 @@ class ErrorHandlingIT {
 
     private int findCustomerId(String email) {
         return webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .header(AUTHORIZATION, bearerToken)
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(CustomerDTO.class)
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
+                })
                 .returnResult()
                 .getResponseBody()
+                .content()
                 .stream()
                 .filter(customer -> customer.email().equals(email))
                 .map(CustomerDTO::id)

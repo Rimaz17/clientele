@@ -30,7 +30,8 @@ import java.util.Random;
 @ConditionalOnProperty(prefix = "clientele.seed", name = "enabled", havingValue = "true")
 public class DevDataSeeder implements ApplicationRunner {
 
-    static final int DEMO_CUSTOMERS = 1;
+    // Enough for a few pages of the customer list at the default page size.
+    static final int DEMO_CUSTOMERS = 50;
     static final String DEMO_PASSWORD = "password";
 
     // Matches the 15-character limit of the sign-up and update forms.

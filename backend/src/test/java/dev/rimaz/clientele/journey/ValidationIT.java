@@ -5,11 +5,13 @@ import dev.rimaz.clientele.customer.CustomerDTO;
 import dev.rimaz.clientele.customer.CustomerRegistrationRequest;
 import dev.rimaz.clientele.customer.CustomerUpdateRequest;
 import dev.rimaz.clientele.customer.Gender;
+import dev.rimaz.clientele.customer.PageResponse;
 import dev.rimaz.clientele.exception.ApiError;
 import dev.rimaz.clientele.exception.ApiFieldError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -224,14 +226,16 @@ class ValidationIT {
 
     private CustomerDTO findCustomer(String bearerToken) {
         return webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .header(AUTHORIZATION, bearerToken)
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(CustomerDTO.class)
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
+                })
                 .returnResult()
                 .getResponseBody()
+                .content()
                 .stream()
                 .filter(customer -> customer.email().equals(email))
                 .findFirst()

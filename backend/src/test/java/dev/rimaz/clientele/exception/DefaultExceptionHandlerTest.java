@@ -14,6 +14,7 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -81,6 +82,26 @@ class DefaultExceptionHandlerTest {
         assertThat(body.errors()).containsExactly(
                 new ApiFieldError("age", "Age must be at least 16"),
                 new ApiFieldError("name", "Name is required")
+        );
+    }
+
+    @Test
+    void invalidQueryParametersReturn400WithoutConversionDetails() {
+        BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "customerQuery");
+        bindingResult.addError(new FieldError("customerQuery", "size", 0, false, null, null,
+                "Size must be between 1 and 100"));
+        bindingResult.addError(new FieldError("customerQuery", "gender", "OTHER", true, null, null,
+                "Failed to convert property value of type 'java.lang.String' to required type 'Gender'"));
+        BindException exception = new BindException(bindingResult);
+
+        ResponseEntity<ApiError> response = underTest.handleException(exception, request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Request validation failed");
+        assertThat(response.getBody().errors()).containsExactly(
+                new ApiFieldError("gender", "Invalid value"),
+                new ApiFieldError("size", "Size must be between 1 and 100")
         );
     }
 

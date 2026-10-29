@@ -62,18 +62,19 @@ public class CustomerIT {
                 .get(AUTHORIZATION)
                 .get(0);
 
-        // get all customers
+        // find the customer by email
         List<CustomerDTO> allCustomers = webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .accept(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, String.format("Bearer %s", jwtToken))
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
                 })
                 .returnResult()
-                .getResponseBody();
+                .getResponseBody()
+                .content();
 
         int id = allCustomers.stream()
                 .filter(customer -> customer.email().equals(email))
@@ -156,18 +157,19 @@ public class CustomerIT {
                 .get(AUTHORIZATION)
                 .get(0);
 
-        // get all customers
+        // find the customer by email
         List<CustomerDTO> allCustomers = webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .accept(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, String.format("Bearer %s", jwtToken))
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
                 })
                 .returnResult()
-                .getResponseBody();
+                .getResponseBody()
+                .content();
 
 
         int id = allCustomers.stream()
@@ -225,18 +227,19 @@ public class CustomerIT {
                 .get(AUTHORIZATION)
                 .get(0);
 
-        // get all customers
+        // find the customer by email
         List<CustomerDTO> allCustomers = webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .accept(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, String.format("Bearer %s", jwtToken))
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
                 })
                 .returnResult()
-                .getResponseBody();
+                .getResponseBody()
+                .content();
 
 
         int id = allCustomers.stream()
@@ -319,18 +322,19 @@ public class CustomerIT {
                 .get(AUTHORIZATION)
                 .get(0);
 
-        // get all customers
+        // find the customer by email
         List<CustomerDTO> allCustomers = webTestClient.get()
-                .uri(CUSTOMER_PATH)
+                .uri(CUSTOMER_PATH + "?search={email}", email)
                 .accept(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, String.format("Bearer %s", jwtToken))
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
+                .expectBody(new ParameterizedTypeReference<PageResponse<CustomerDTO>>() {
                 })
                 .returnResult()
-                .getResponseBody();
+                .getResponseBody()
+                .content();
 
         CustomerDTO customerDTO = allCustomers.stream()
                 .filter(customer -> customer.email().equals(email))

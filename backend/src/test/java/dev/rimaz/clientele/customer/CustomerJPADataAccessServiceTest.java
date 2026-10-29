@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,19 +36,22 @@ class CustomerJPADataAccessServiceTest {
     }
 
     @Test
-    void selectAllCustomers() {
-        Page<Customer> page = mock(Page.class);
+    void selectCustomersRequestsThePageAndSortWithAnIdTieBreaker() {
+        // Given
         List<Customer> customers = List.of(new Customer());
-        when(page.getContent()).thenReturn(customers);
-        when(customerRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(customerRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(customers, PageRequest.of(2, 10), 21));
+        CustomerQuery query = new CustomerQuery(2, 10, "name,desc", null, null, null, null);
+
         // When
-        List<Customer> expected = underTest.selectAllCustomers();
+        PageResponse<Customer> actual = underTest.selectCustomers(query);
 
         // Then
-        assertThat(expected).isEqualTo(customers);
-        ArgumentCaptor<Pageable> pageArgumentCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(customerRepository).findAll(pageArgumentCaptor.capture());
-        assertThat(pageArgumentCaptor.getValue()).isEqualTo(Pageable.ofSize(1000));
+        assertThat(actual).isEqualTo(new PageResponse<>(customers, 2, 10, 21, 3));
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(customerRepository).findAll(any(Specification.class), pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue()).isEqualTo(
+                PageRequest.of(2, 10, Sort.by(Sort.Direction.DESC, "name").and(Sort.by("id"))));
     }
 
     @Test
