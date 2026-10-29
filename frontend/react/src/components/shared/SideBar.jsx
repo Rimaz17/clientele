@@ -26,6 +26,7 @@ import {
     FiMenu,
     FiUsers
 } from 'react-icons/fi';
+import {Link as RouterLink, useLocation} from "react-router-dom";
 import {useAuth} from "../context/AuthContext.jsx";
 
 // "ROLE_ADMIN" -> "Admin"
@@ -94,18 +95,31 @@ const SidebarContent = ({onClose, ...rest}) => {
     );
 };
 
+// The link to the page being shown is marked with aria-current and a tint.
+// White hover text on blue.600 keeps AA contrast.
 const NavItem = ({icon, route, children, ...rest}) => {
+    const isCurrent = useLocation().pathname === route;
     return (
-        <Link href={route} style={{textDecoration: 'none'}} _focus={{boxShadow: 'none'}}>
+        <Link
+            as={RouterLink}
+            to={route}
+            aria-current={isCurrent ? 'page' : undefined}
+            display="block"
+            mx="4"
+            borderRadius="lg"
+            style={{textDecoration: 'none'}}
+            _focusVisible={{boxShadow: 'outline'}}>
             <Flex
                 align="center"
                 p="4"
-                mx="4"
                 borderRadius="lg"
                 role="group"
                 cursor="pointer"
+                bg={isCurrent ? 'blue.50' : undefined}
+                color={isCurrent ? 'blue.700' : undefined}
+                fontWeight={isCurrent ? 'semibold' : undefined}
                 _hover={{
-                    bg: 'blue.400',
+                    bg: 'blue.600',
                     color: 'white',
                 }}
                 {...rest}>
