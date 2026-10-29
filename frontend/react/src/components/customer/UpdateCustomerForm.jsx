@@ -4,7 +4,7 @@ import {Avatar, Box, Button, Stack, Text, VStack} from "@chakra-ui/react";
 import {TextField} from "../shared/FormFields.jsx";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
-import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
+import {getChangeErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
 import {useAuth} from "../context/AuthContext.jsx";
@@ -44,7 +44,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             successNotification("Profile picture updated", "The new picture is now shown")
             fetchCustomers()
         }).catch(err => {
-            errorNotification("Upload failed", getApiErrorMessage(err, "The profile picture could not be uploaded"))
+            errorNotification("Upload failed", getChangeErrorMessage(err, "The profile picture could not be uploaded"))
         })
     }, [customerId, fetchCustomers])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
@@ -129,7 +129,7 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                         setErrors(getFieldErrors(err, {conflictField: "email"}));
                         errorNotification(
                             "Could not update customer",
-                            getApiErrorMessage(err)
+                            getChangeErrorMessage(err)
                         )
                     }).finally(() => {
                         setSubmitting(false);

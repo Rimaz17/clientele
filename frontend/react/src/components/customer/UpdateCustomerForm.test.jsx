@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { updateCustomer } from '../../services/client.js';
+import { errorNotification } from '../../services/notification.js';
 import { fakeToken } from '../../test/fakeToken.js';
 import AuthProvider from '../context/AuthContext.jsx';
 import UpdateCustomerForm from './UpdateCustomerForm.jsx';
@@ -71,6 +72,24 @@ describe('UpdateCustomerForm', () => {
     await changeEmail(user, 'alexandra@clientele.dev');
 
     await vi.waitFor(() => expect(fetchCustomers).toHaveBeenCalled());
+    expect(localStorage.getItem('access_token')).toBe(oldToken);
+  });
+
+  it('explains a 403 in the error toast', async () => {
+    updateCustomer.mockRejectedValue({
+      response: { status: 403, data: { message: 'Access denied', errors: [] } },
+    });
+    const user = userEvent.setup();
+    renderForm();
+
+    await changeEmail(user, 'alexandra@clientele.dev');
+
+    await vi.waitFor(() =>
+      expect(errorNotification).toHaveBeenCalledWith(
+        'Could not update customer',
+        'You can only change your own account.',
+      ),
+    );
     expect(localStorage.getItem('access_token')).toBe(oldToken);
   });
 });

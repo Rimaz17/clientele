@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getApiErrorMessage, getFieldErrors } from './apiErrors.js';
+import { getApiErrorMessage, getChangeErrorMessage, getFieldErrors } from './apiErrors.js';
 
 const apiError = (data) => ({ response: { data } });
 
@@ -18,6 +18,29 @@ describe('getApiErrorMessage', () => {
 
   it('uses a custom fallback when one is given', () => {
     expect(getApiErrorMessage(undefined, 'Upload failed')).toBe('Upload failed');
+  });
+});
+
+describe('getChangeErrorMessage', () => {
+  it('explains a 403 as a permission problem', () => {
+    const error = { response: { status: 403, data: { message: 'Access denied' } } };
+
+    expect(getChangeErrorMessage(error)).toBe('You can only change your own account.');
+  });
+
+  it('returns the API message for other errors', () => {
+    const error = { response: { status: 409, data: { message: 'email already taken' } } };
+
+    expect(getChangeErrorMessage(error)).toBe('email already taken');
+  });
+
+  it('uses the fallback when there is no response', () => {
+    expect(getChangeErrorMessage(new Error('Network Error'), 'Upload failed')).toBe(
+      'Upload failed',
+    );
+    expect(getChangeErrorMessage(new Error('Network Error'))).toBe(
+      'Something went wrong. Please try again.',
+    );
   });
 });
 
