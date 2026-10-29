@@ -133,6 +133,23 @@ class ErrorHandlingIT {
         assertApiError(error, HttpStatus.BAD_REQUEST, CUSTOMER_PATH, "Malformed or unreadable request body");
     }
 
+    @Test
+    void invalidTokenReturns403() {
+        ApiError error = webTestClient.get()
+                .uri(CUSTOMER_PATH)
+                .header(AUTHORIZATION, "Bearer not-a-real-token")
+                .exchange()
+                .expectStatus()
+                .isForbidden()
+                .expectBody(ApiError.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(error).isNotNull();
+        assertThat(error.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(error.path()).isEqualTo(CUSTOMER_PATH);
+    }
+
     private int findCustomerId(String email) {
         return webTestClient.get()
                 .uri(CUSTOMER_PATH)
