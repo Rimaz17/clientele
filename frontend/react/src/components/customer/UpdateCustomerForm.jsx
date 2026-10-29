@@ -4,9 +4,10 @@ import {Avatar, Box, Button, Stack, Text, VStack} from "@chakra-ui/react";
 import {TextField} from "../shared/FormFields.jsx";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
-import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
+import {getChangeErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
+import {useAuth} from "../context/AuthContext.jsx";
 
 // Mirrors the image types and the 10 MB upload limit the API accepts.
 const ACCEPTED_IMAGE_TYPES = {
@@ -43,7 +44,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             successNotification("Profile picture updated", "The new picture is now shown")
             fetchCustomers()
         }).catch(err => {
-            errorNotification("Upload failed", getApiErrorMessage(err, "The profile picture could not be uploaded"))
+            errorNotification("Upload failed", getChangeErrorMessage(err, "The profile picture could not be uploaded"))
         })
     }, [customerId, fetchCustomers])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
@@ -76,6 +77,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
 }
 
 const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
+    const { storeToken } = useAuth()
     return (
         <>
             <VStack spacing={'5'} mb={'5'}>
@@ -111,6 +113,12 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                     updateCustomer(customerId, updatedCustomer)
                         .then(res => {
                             console.log(res);
+                            // Users who change their own email get a new token,
+                            // because the old one names the old email.
+                            const newToken = res.headers?.authorization
+                            if (newToken) {
+                                storeToken(newToken)
+                            }
                             successNotification(
                                 "Customer updated",
                                 `${updatedCustomer.name} was successfully updated`
@@ -121,7 +129,7 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                         setErrors(getFieldErrors(err, {conflictField: "email"}));
                         errorNotification(
                             "Could not update customer",
-                            getApiErrorMessage(err)
+                            getChangeErrorMessage(err)
                         )
                     }).finally(() => {
                         setSubmitting(false);

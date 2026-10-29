@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,7 +39,8 @@ public class CustomerController {
     public ResponseEntity<?> registerCustomer(
             @Valid @RequestBody CustomerRegistrationRequest request) {
         customerService.addCustomer(request);
-        String jwtToken = jwtUtil.issueToken(request.email(), "ROLE_USER");
+        // Registration always creates a regular user; admins are bootstrapped or promoted.
+        String jwtToken = jwtUtil.issueToken(request.email(), Role.USER.authority());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, jwtToken)
                 .build();
@@ -51,10 +53,18 @@ public class CustomerController {
     }
 
     @PutMapping("{customerId}")
-    public void updateCustomer(
+    public ResponseEntity<Void> updateCustomer(
             @PathVariable("customerId") Integer customerId,
-            @Valid @RequestBody CustomerUpdateRequest updateRequest) {
-        customerService.updateCustomer(customerId, updateRequest);
+            @Valid @RequestBody CustomerUpdateRequest updateRequest,
+            @AuthenticationPrincipal Customer principal) {
+        CustomerDTO updated = customerService.updateCustomer(customerId, updateRequest);
+        if (isOwnEmailChange(principal, updated)) {
+            String jwtToken = jwtUtil.issueToken(updated.username(), updated.roles());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, jwtToken)
+                    .build();
+        }
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(
@@ -76,4 +86,10 @@ public class CustomerController {
         return customerService.getCustomerProfileImage(customerId);
     }
 
+    // A token names its user by email, so users who change their own email need
+    // a new token. Admins editing someone else keep their own.
+    private static boolean isOwnEmailChange(Customer principal, CustomerDTO updated) {
+        return principal.getId().equals(updated.id())
+                && !principal.getEmail().equals(updated.email());
+    }
 }

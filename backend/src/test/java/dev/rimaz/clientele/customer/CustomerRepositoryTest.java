@@ -1,15 +1,15 @@
 package dev.rimaz.clientele.customer;
 
 import dev.rimaz.clientele.AbstractTestcontainers;
-import dev.rimaz.clientele.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestConfig.class})
 class CustomerRepositoryTest extends AbstractTestcontainers {
 
     @Autowired
@@ -25,6 +24,9 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -132,5 +134,55 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
                 .hasValueSatisfying(
                         c -> assertThat(c.getProfileImageId()).isEqualTo("2222")
                 );
+    }
+
+    @Test
+    void savesAndLoadsTheRole() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer customer = new Customer(
+                null,
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.FEMALE,
+                null,
+                Role.ADMIN);
+
+        // When
+        underTest.saveAndFlush(customer);
+        // Forget the cached entity so the role is read back from the database.
+        entityManager.clear();
+
+        // Then
+        assertThat(underTest.findCustomerByEmail(email))
+                .hasValueSatisfying(c -> assertThat(c.getRole()).isEqualTo(Role.ADMIN));
+    }
+
+    @Test
+    void countsCustomersByRole() {
+        // Given
+        Customer user = new Customer(
+                FAKER.name().fullName(),
+                FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID(),
+                "password", 20,
+                Gender.MALE);
+        Customer admin = new Customer(
+                null,
+                FAKER.name().fullName(),
+                FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID(),
+                "password", 20,
+                Gender.FEMALE,
+                null,
+                Role.ADMIN);
+        underTest.saveAll(List.of(user, admin));
+
+        // When
+        long users = underTest.countByRole(Role.USER);
+        long admins = underTest.countByRole(Role.ADMIN);
+
+        // Then
+        assertThat(users).isEqualTo(1);
+        assertThat(admins).isEqualTo(1);
     }
 }

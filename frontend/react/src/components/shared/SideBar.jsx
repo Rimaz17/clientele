@@ -31,6 +31,12 @@ import {
 } from 'react-icons/fi';
 import {useAuth} from "../context/AuthContext.jsx";
 
+// "ROLE_ADMIN" -> "Admin"
+const roleLabel = (role) => {
+    const name = role.replace(/^ROLE_/, '').toLowerCase();
+    return name.charAt(0).toUpperCase() + name.slice(1);
+};
+
 const LinkItems = [
     {name: 'Home', route: '/dashboard', icon: FiHome},
     {name: 'Customers', route: '/dashboard/customers',  icon: FiUsers},
@@ -186,7 +192,7 @@ const MobileNav = ({onOpen, ...rest}) => {
                                     <Text fontSize="sm">{customer?.username}</Text>
                                     {customer?.roles.map((role, id) => (
                                         <Text key={id} fontSize="xs" color="gray.600">
-                                            {role}
+                                            {roleLabel(role)}
                                         </Text>
                                     ))}
                                 </VStack>

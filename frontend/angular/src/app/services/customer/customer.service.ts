@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { CustomerDTO } from '../../models/customer-dto';
 import { environment } from '../../../environments/environment';
 import { CustomerRegistrationRequest } from '../../models/customer-registration-request';
 import { CustomerUpdateRequest } from '../../models/customer-update-request';
+import { AuthenticationResponse } from '../../models/authentication-response';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +31,26 @@ export class CustomerService {
   }
 
   updateCustomer(id: number | undefined, customer: CustomerUpdateRequest): Observable<void> {
-    return this.http.put<void>(`${this.customerUrl}/${id}`, customer);
+    return this.http.put<void>(`${this.customerUrl}/${id}`, customer, { observe: 'response' })
+    .pipe(
+      tap(response => this.storeRefreshedToken(response.headers.get('Authorization'), customer.email)),
+      map(() => undefined)
+    );
+  }
+
+  // Users who change their own email get a new token, because the old one names
+  // the old email. Admins editing someone else get no token and keep theirs.
+  private storeRefreshedToken(token: string | null, email: string | undefined) {
+    const storedUser = localStorage.getItem('user');
+    if (!token || !storedUser) {
+      return;
+    }
+    const authResponse: AuthenticationResponse = JSON.parse(storedUser);
+    authResponse.token = token;
+    if (email) {
+      authResponse.customerDTO.email = email;
+      authResponse.customerDTO.username = email;
+    }
+    localStorage.setItem('user', JSON.stringify(authResponse));
   }
 }

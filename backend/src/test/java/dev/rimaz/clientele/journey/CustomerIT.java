@@ -6,7 +6,6 @@ import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -23,10 +22,9 @@ import java.util.Random;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@IntegrationTest
 public class CustomerIT {
 
     @Autowired
@@ -131,14 +129,18 @@ public class CustomerIT {
         );
 
         // send a post request to create customer 1
-        webTestClient.post()
+        String customer1Token = webTestClient.post()
                 .uri(CUSTOMER_PATH)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(request), CustomerRegistrationRequest.class)
                 .exchange()
                 .expectStatus()
-                .isOk();
+                .isOk()
+                .returnResult(Void.class)
+                .getResponseHeaders()
+                .get(AUTHORIZATION)
+                .get(0);
 
         // send a post request to create customer 2
         String jwtToken = webTestClient.post()
@@ -174,10 +176,10 @@ public class CustomerIT {
                 .findFirst()
                 .orElseThrow();
 
-        // customer 2 deletes customer 1
+        // customer 1 deletes their own account
         webTestClient.delete()
                 .uri(CUSTOMER_PATH + "/{id}", id)
-                .header(AUTHORIZATION, String.format("Bearer %s", jwtToken))
+                .header(AUTHORIZATION, String.format("Bearer %s", customer1Token))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus()

@@ -86,7 +86,24 @@ Open `http://localhost:5173`.
 
 ### Logging in
 
-Create an account on the sign-up page. In development the API also adds a random customer on every start; its email is printed in the backend log and its password is `password`.
+In development (the `dev` profile) the API creates an admin account on startup:
+
+| Email | Password | Role |
+|---|---|---|
+| `admin@clientele.dev` | `admin-password` | Admin |
+
+These credentials are for local development only. You can also create a regular account on the sign-up page. The `dev` profile adds a demo customer the first time it starts (not on every start); demo customers use the password `password`.
+
+### Roles
+
+Every account is a regular user (`USER`) unless it is an admin (`ADMIN`). Users can change, delete and upload a picture only for their own account; admins can do this for any account. Every signed-in user can see the customer list. The API enforces these rules and returns `403` otherwise; the React app hides the controls you cannot use.
+
+Outside the `dev` profile there is no admin until you configure one. When both variables are set, startup creates that admin, or promotes the existing account with that email and sets its password to the configured one:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CLIENTELE_BOOTSTRAP_ADMIN_EMAIL` | none (dev profile: `admin@clientele.dev`) | Email of the admin account |
+| `CLIENTELE_BOOTSTRAP_ADMIN_PASSWORD` | none (dev profile: `admin-password`) | Its password, at least 8 characters |
 
 ## Tests
 
