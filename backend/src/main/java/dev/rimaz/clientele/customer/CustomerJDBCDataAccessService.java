@@ -1,8 +1,12 @@
 package dev.rimaz.clientele.customer;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,11 +14,13 @@ import java.util.Optional;
 public class CustomerJDBCDataAccessService implements CustomerDao {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final CustomerRowMapper customerRowMapper;
 
     public CustomerJDBCDataAccessService(JdbcTemplate jdbcTemplate,
                                          CustomerRowMapper customerRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
         this.customerRowMapper = customerRowMapper;
     }
 
@@ -27,6 +33,56 @@ public class CustomerJDBCDataAccessService implements CustomerDao {
                 """;
 
         return jdbcTemplate.query(sql, customerRowMapper);
+    }
+
+    @Override
+    public PageResponse<Customer> selectCustomers(CustomerQuery query) {
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        String where = whereClause(query, parameters);
+
+        Long total = namedParameterJdbcTemplate.queryForObject(
+                "SELECT count(*) FROM customer" + where, parameters, Long.class);
+
+        parameters.addValue("limit", query.size());
+        parameters.addValue("offset", (long) query.page() * query.size());
+        var sql = """
+                SELECT id, name, email, password, age, gender, profile_image_id, role
+                FROM customer
+                """ + where + orderByClause(query) + " LIMIT :limit OFFSET :offset";
+        List<Customer> content = namedParameterJdbcTemplate.query(sql, parameters, customerRowMapper);
+
+        return PageResponse.of(content, query.page(), query.size(), total == null ? 0 : total);
+    }
+
+    // User input only ever reaches the SQL as named parameters.
+    private static String whereClause(CustomerQuery query, MapSqlParameterSource parameters) {
+        List<String> conditions = new ArrayList<>();
+        if (query.search() != null) {
+            conditions.add("(name ILIKE :search ESCAPE '\\' OR email ILIKE :search ESCAPE '\\')");
+            parameters.addValue("search", LikePattern.contains(query.search()));
+        }
+        if (query.gender() != null) {
+            conditions.add("gender = :gender");
+            parameters.addValue("gender", query.gender().name());
+        }
+        if (query.minAge() != null) {
+            conditions.add("age >= :minAge");
+            parameters.addValue("minAge", query.minAge());
+        }
+        if (query.maxAge() != null) {
+            conditions.add("age <= :maxAge");
+            parameters.addValue("maxAge", query.maxAge());
+        }
+        return conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
+    }
+
+    // The column comes from the CustomerSortField whitelist, never from the
+    // request. The id tie-breaker keeps pages stable when sort values repeat.
+    private static String orderByClause(CustomerQuery query) {
+        CustomerSortField field = query.sortField();
+        String direction = query.sortDirection() == Sort.Direction.DESC ? "DESC" : "ASC";
+        String orderBy = " ORDER BY " + field.column() + " " + direction;
+        return field == CustomerSortField.ID ? orderBy : orderBy + ", id ASC";
     }
 
     @Override

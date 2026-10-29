@@ -1,7 +1,9 @@
 package dev.rimaz.clientele.customer;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +22,21 @@ public class CustomerJPADataAccessService implements CustomerDao {
     public List<Customer> selectAllCustomers() {
         Page<Customer> page = customerRepository.findAll(Pageable.ofSize(1000));
         return page.getContent();
+    }
+
+    @Override
+    public PageResponse<Customer> selectCustomers(CustomerQuery query) {
+        CustomerSortField field = query.sortField();
+        Sort sort = Sort.by(query.sortDirection(), field.property());
+        // Same id tie-breaker as the JDBC implementation, for stable pages.
+        if (field != CustomerSortField.ID) {
+            sort = sort.and(Sort.by(CustomerSortField.ID.property()));
+        }
+        Page<Customer> page = customerRepository.findAll(
+                CustomerSpecifications.matching(query),
+                PageRequest.of(query.page(), query.size(), sort)
+        );
+        return PageResponse.of(page.getContent(), query.page(), query.size(), page.getTotalElements());
     }
 
     @Override
