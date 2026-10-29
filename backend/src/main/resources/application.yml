@@ -8,6 +8,13 @@ server:
     include-stacktrace: never
     include-exception: false
 
+clientele:
+  jwt:
+    # No secret here on purpose: it comes from application-dev.yml locally and
+    # from the CLIENTELE_JWT_SECRET environment variable everywhere else.
+    issuer: clientele
+    expiration: 15d
+
 cors:
   allowed-origins: "*"
   allowed-methods: "*"
@@ -28,6 +35,9 @@ management:
         include: "health,info"
 
 spring:
+  profiles:
+    # Local runs and tests use the dev profile unless a profile is set explicitly.
+    default: dev
   datasource:
     url: jdbc:postgresql://localhost:5332/customer
     username: amigoscode
