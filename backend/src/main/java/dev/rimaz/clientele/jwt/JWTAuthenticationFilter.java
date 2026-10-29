@@ -1,15 +1,19 @@
 package dev.rimaz.clientele.jwt;
 
 import dev.rimaz.clientele.customer.CustomerUserDetailsService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,6 +22,8 @@ import java.io.IOException;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
     private final JWTUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -42,6 +48,18 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = authHeader.substring(7);
+        try {
+            authenticate(jwt, request);
+        } catch (JwtException | UsernameNotFoundException e) {
+            // The request continues unauthenticated, so protected endpoints are
+            // answered with 403 by the authentication entry point.
+            log.debug("Rejected bearer token: {}", e.getClass().getSimpleName());
+        }
+        filterChain.doFilter(request, response);
+
+    }
+
+    private void authenticate(String jwt, HttpServletRequest request) {
         String subject = jwtUtil.getSubject(jwt);
 
         if (subject != null &&
@@ -58,7 +76,5 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
-        filterChain.doFilter(request, response);
-
     }
 }

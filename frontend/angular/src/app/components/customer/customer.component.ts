@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CustomerDTO } from '../../models/customer-dto';
 import { CustomerService } from '../../services/customer/customer.service';
 import { CustomerRegistrationRequest } from '../../models/customer-registration-request';
@@ -52,7 +53,8 @@ export class CustomerComponent implements OnInit {
                 detail: `Customer ${customer.name} was successfully saved`
               }
             );
-          }
+          },
+          error: (err: HttpErrorResponse) => this.showError(err)
         });
       } else if (this.operation === 'update') {
         this.customerService.updateCustomer(customer.id, customer)
@@ -68,7 +70,8 @@ export class CustomerComponent implements OnInit {
                 detail: `Customer ${customer.name} was successfully updated`
               }
             );
-          }
+          },
+          error: (err: HttpErrorResponse) => this.showError(err)
         });
       }
     }
@@ -90,9 +93,18 @@ export class CustomerComponent implements OnInit {
                 detail: `Customer ${customer.name} was successfully deleted`
               }
             );
-          }
+          },
+          error: (err: HttpErrorResponse) => this.showError(err)
         });
       }
+    });
+  }
+
+  private showError(err: HttpErrorResponse) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: err.error?.message ?? 'Something went wrong. Please try again.'
     });
   }
 

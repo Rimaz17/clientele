@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CustomerRegistrationRequest } from '../../models/customer-registration-request';
 import { CustomerService } from '../../services/customer/customer.service';
@@ -25,6 +26,7 @@ export class RegisterComponent {
   }
 
   createAccount() {
+    this.errorMsg = '';
     this.customerService.registerCustomer(this.customer)
     .subscribe({
       next: () => {
@@ -44,6 +46,9 @@ export class RegisterComponent {
             }
           }
         });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errorMsg = err.error?.message ?? 'Registration failed. Please try again.';
       }
     });
   }
