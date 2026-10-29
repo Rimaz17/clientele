@@ -6,6 +6,9 @@ clientele:
     # DEVELOPMENT ONLY. Never use this value in any shared or deployed environment.
     # Other environments must provide CLIENTELE_JWT_SECRET instead.
     secret: "dev-only-5J/WxfbC+zvOPVM0WprSw5F5EZUWPxfB9eYqJBS/FuRzwcONgxOz0G0DwhTmLrOQ"
+  seed:
+    # Adds demo customers on startup (see DevDataSeeder).
+    enabled: true
   bootstrap:
     admin:
       # DEVELOPMENT ONLY admin account, documented in the README. Other

@@ -14,6 +14,7 @@ public interface CustomerRepository
     boolean existsCustomerByEmail(String email);
     boolean existsCustomerById(Integer id);
     Optional<Customer> findCustomerByEmail(String email);
+    long countByRole(Role role);
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Customer c SET c.profileImageId = ?1 WHERE c.id = ?2")
     int updateProfileImageId(String profileImageId, Integer customerId);
