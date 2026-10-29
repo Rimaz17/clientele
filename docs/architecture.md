@@ -32,11 +32,11 @@ flowchart LR
 
 ## Layers
 
-The backend is an N-tier application, organised by feature package (`auth`, `bootstrap`, `customer`, `exception`, `jwt`, `s3`, `security`, `stats`).
+The backend is an N-tier application, organised by feature package (`auth`, `bootstrap`, `customer`, `exception`, `jwt`, `openapi`, `s3`, `security`, `stats`).
 
 | Layer | Responsibility |
 |---|---|
-| Security filter chain | `JWTAuthenticationFilter` validates the bearer token and sets the authenticated user. Public endpoints are registration, login, `/ping`, profile-image downloads and actuator health. |
+| Security filter chain | `JWTAuthenticationFilter` validates the bearer token and sets the authenticated user. Public endpoints are registration, login, `/ping`, profile-image downloads, actuator health and the API docs (`/v3/api-docs`, Swagger UI). |
 | Controllers | HTTP only: request mapping, status codes and response headers. |
 | Services | Business rules, such as duplicate email checks and update validation, and authorization: `@PreAuthorize` rules on `CustomerService` (see below). |
 | DAO | `CustomerDao` hides persistence. `CustomerService` uses the JDBC implementation (`JdbcTemplate`); authentication uses the JPA implementation (Spring Data `CustomerRepository`). |
@@ -44,6 +44,10 @@ The backend is an N-tier application, organised by feature package (`auth`, `boo
 | File storage | `S3Service` stores profile images in S3. When `aws.s3.mock` is `true`, `FakeS3` writes them to the local disk instead. |
 
 Errors are thrown as domain exceptions and turned into `ApiError` responses in one place, `DefaultExceptionHandler`.
+
+## API documentation
+
+springdoc-openapi builds the OpenAPI document (`/v3/api-docs`) from the controllers at startup and serves Swagger UI (`/swagger-ui/index.html`). `OpenApiConfig` sets the title and description and declares the JWT bearer scheme as the default requirement for every operation; public operations override it with an empty `@SecurityRequirements`, and the actuator endpoints are marked public by a customizer. Each operation declares only the status codes it can return, with the `ApiError` schema for errors (`springdoc.override-with-generic-response` is off), and the request and response records carry `@Schema` descriptions and examples. `ApiDocsIT` fails the build when an operation has no tag or summary.
 
 ## Authentication flow
 
