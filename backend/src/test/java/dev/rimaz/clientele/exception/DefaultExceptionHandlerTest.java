@@ -9,6 +9,7 @@ import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,6 +59,16 @@ class DefaultExceptionHandlerTest {
         ResponseEntity<ApiError> response = underTest.handleException(exception, request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "Malformed or unreadable request body");
+    }
+
+    @Test
+    void argumentTypeMismatchReturns400() {
+        MethodArgumentTypeMismatchException exception = new MethodArgumentTypeMismatchException(
+                "abc", Integer.class, "customerId", null, new NumberFormatException());
+
+        ResponseEntity<ApiError> response = underTest.handleException(exception, request);
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "Parameter 'customerId' has an invalid value");
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 
@@ -37,6 +38,13 @@ public class DefaultExceptionHandler {
     public ResponseEntity<ApiError> handleException(HttpMessageNotReadableException e,
                                                     HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, "Malformed or unreadable request body", request);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleException(MethodArgumentTypeMismatchException e,
+                                                    HttpServletRequest request) {
+        String message = "Parameter '%s' has an invalid value".formatted(e.getName());
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
