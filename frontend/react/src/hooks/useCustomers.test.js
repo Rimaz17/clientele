@@ -32,7 +32,7 @@ describe('useCustomers', () => {
     expect(getCustomers).toHaveBeenCalledWith({
       page: 1,
       size: 20,
-      sort: 'id,asc',
+      sort: 'createdAt,desc',
       gender: 'FEMALE',
     });
     expect(result.current.data.content).toEqual([{ id: 1, name: 'Ann' }]);

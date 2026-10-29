@@ -21,8 +21,8 @@ public record CustomerQuery(
 
         // Keep in sync with CustomerSortField; CustomerQueryValidationTest checks it.
         @Pattern(
-                regexp = "(id|name|email|age)(,(asc|desc))?",
-                message = "Sort must be id, name, email or age, optionally followed by ,asc or ,desc"
+                regexp = "(id|name|email|age|createdAt)(,(asc|desc))?",
+                message = "Sort must be id, name, email, age or createdAt, optionally followed by ,asc or ,desc"
         )
         String sort,
 
@@ -42,7 +42,8 @@ public record CustomerQuery(
 
     public static final int DEFAULT_PAGE = 0;
     public static final int DEFAULT_SIZE = 20;
-    public static final String DEFAULT_SORT = "id,asc";
+    // Newest sign-ups first.
+    public static final String DEFAULT_SORT = "createdAt,desc";
 
     public CustomerQuery {
         page = page == null ? DEFAULT_PAGE : page;

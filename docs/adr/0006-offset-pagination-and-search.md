@@ -1,6 +1,6 @@
 # 0006. Offset pagination and search for the customer list
 
-- **Status:** Accepted
+- **Status:** Accepted; the default sort was changed by [ADR 0007](0007-dashboard-aggregations.md)
 - **Date:** 2026-10-29
 
 ## Context

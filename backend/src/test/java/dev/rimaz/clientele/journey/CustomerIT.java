@@ -76,11 +76,12 @@ public class CustomerIT {
                 .getResponseBody()
                 .content();
 
-        int id = allCustomers.stream()
+        CustomerDTO listed = allCustomers.stream()
                 .filter(customer -> customer.email().equals(email))
-                .map(CustomerDTO::id)
                 .findFirst()
                 .orElseThrow();
+        int id = listed.id();
+        assertThat(listed.createdAt()).isNotNull();
 
         // make sure that customer is present
         CustomerDTO expectedCustomer = new CustomerDTO(
@@ -91,7 +92,8 @@ public class CustomerIT {
                 age,
                 List.of("ROLE_USER"),
                 email,
-                null
+                null,
+                listed.createdAt()
         );
 
         assertThat(allCustomers).contains(expectedCustomer);
@@ -242,11 +244,11 @@ public class CustomerIT {
                 .content();
 
 
-        int id = allCustomers.stream()
+        CustomerDTO original = allCustomers.stream()
                 .filter(customer -> customer.email().equals(email))
-                .map(CustomerDTO::id)
                 .findFirst()
                 .orElseThrow();
+        int id = original.id();
 
         // update customer
 
@@ -286,7 +288,8 @@ public class CustomerIT {
                 age,
                 List.of("ROLE_USER"),
                 email,
-                null
+                null,
+                original.createdAt()
         );
 
         assertThat(updatedCustomer).isEqualTo(expected);

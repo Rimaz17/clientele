@@ -13,7 +13,7 @@ describe('readListParams', () => {
     expect(readListParams(new URLSearchParams())).toEqual({
       page: 1,
       size: 20,
-      sort: 'id,asc',
+      sort: 'createdAt,desc',
       search: '',
       gender: undefined,
       minAge: undefined,
@@ -45,11 +45,15 @@ describe('readListParams', () => {
     expect(readListParams(params)).toMatchObject({
       page: 1,
       size: 20,
-      sort: 'id,asc',
+      sort: 'createdAt,desc',
       gender: undefined,
       minAge: undefined,
       maxAge: undefined,
     });
+  });
+
+  it('falls back to the default for the retired id sort', () => {
+    expect(readListParams(new URLSearchParams('sort=id,desc')).sort).toBe('createdAt,desc');
   });
 
   it('drops a maximum age below the minimum age', () => {
@@ -65,7 +69,7 @@ describe('toApiParams', () => {
     expect(toApiParams(readListParams(new URLSearchParams('page=2&search=ali')))).toEqual({
       page: 1,
       size: 20,
-      sort: 'id,asc',
+      sort: 'createdAt,desc',
       search: 'ali',
     });
   });
@@ -93,7 +97,7 @@ describe('useCustomerListParams', () => {
   it('leaves defaults out of the URL', () => {
     const { result } = renderParams('/dashboard/customers?sort=name,asc&size=50');
 
-    act(() => result.current.list.updateParams({ sort: 'id,asc', size: 20 }));
+    act(() => result.current.list.updateParams({ sort: 'createdAt,desc', size: 20 }));
 
     expect(result.current.location.search).toBe('');
   });

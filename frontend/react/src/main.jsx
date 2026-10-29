@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import Customer from './Customer.jsx'
-import {ChakraProvider} from '@chakra-ui/react'
+import {Center, ChakraProvider, Spinner} from '@chakra-ui/react'
 import { createStandaloneToast } from '@chakra-ui/toast'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./components/login/Login.jsx";
@@ -9,7 +9,16 @@ import Signup from "./components/signup/Signup";
 import AuthProvider from "./components/context/AuthContext.jsx";
 import ProtectedRoute from "./components/shared/ProtectedRoute.jsx";
 import './index.css'
-import Home from "./Home.jsx";
+import theme from './theme.js'
+
+// The dashboard brings the chart library, so it is downloaded only when opened.
+const Dashboard = lazy(() => import("./Dashboard.jsx"));
+
+const PageSpinner = () => (
+    <Center minH="100vh">
+        <Spinner size="xl" color="blue.500" label="Loading page" />
+    </Center>
+);
 
 const { ToastContainer } = createStandaloneToast();
 
@@ -24,7 +33,7 @@ const router = createBrowserRouter([
     },
     {
         path: "dashboard",
-        element: <ProtectedRoute><Home/></ProtectedRoute>
+        element: <ProtectedRoute><Suspense fallback={<PageSpinner />}><Dashboard/></Suspense></ProtectedRoute>
     },
     {
         path: "dashboard/customers",
@@ -36,7 +45,7 @@ ReactDOM
     .createRoot(document.getElementById('root'))
     .render(
         <React.StrictMode>
-            <ChakraProvider>
+            <ChakraProvider theme={theme}>
                 <AuthProvider>
                     <RouterProvider router={router} />
                 </AuthProvider>

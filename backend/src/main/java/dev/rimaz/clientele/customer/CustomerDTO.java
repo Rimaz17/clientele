@@ -1,5 +1,6 @@
 package dev.rimaz.clientele.customer;
 
+import java.time.Instant;
 import java.util.List;
 
 public record CustomerDTO(
@@ -10,7 +11,8 @@ public record CustomerDTO(
         Integer age,
         List<String> roles,
         String username,
-        String profileImageId
+        String profileImageId,
+        Instant createdAt
 ) {
 
 }

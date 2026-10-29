@@ -47,6 +47,7 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
             assertThat(c.getName()).isEqualTo(customer.getName());
             assertThat(c.getEmail()).isEqualTo(customer.getEmail());
             assertThat(c.getAge()).isEqualTo(customer.getAge());
+            assertThat(c.getCreatedAt()).isNotNull();
         });
     }
 
@@ -273,9 +274,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectUserByEmail(email)
-                .map(Customer::getId)
-                .orElseThrow();
+        Customer inserted = underTest.selectUserByEmail(email).orElseThrow();
+        int id = inserted.getId();
 
         // When update with new name, age and email
         Customer update = new Customer();
@@ -296,6 +296,7 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
             assertThat(updated.getName()).isEqualTo("foo");
             assertThat(updated.getEmail()).isEqualTo(newEmail);
             assertThat(updated.getAge()).isEqualTo(22);
+            assertThat(updated.getCreatedAt()).isEqualTo(inserted.getCreatedAt());
         });
     }
 

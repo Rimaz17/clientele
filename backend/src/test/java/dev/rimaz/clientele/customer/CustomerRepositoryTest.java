@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.ApplicationContext;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -157,6 +158,69 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
         // Then
         assertThat(underTest.findCustomerByEmail(email))
                 .hasValueSatisfying(c -> assertThat(c.getRole()).isEqualTo(Role.ADMIN));
+    }
+
+    @Test
+    void theDatabaseSetsCreatedAtOnInsert() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer customer = new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE);
+
+        // When
+        Customer saved = underTest.saveAndFlush(customer);
+        entityManager.clear();
+
+        // Then
+        assertThat(saved.getCreatedAt()).isNotNull();
+        assertThat(underTest.findCustomerByEmail(email))
+                .hasValueSatisfying(c -> assertThat(c.getCreatedAt()).isEqualTo(saved.getCreatedAt()));
+    }
+
+    @Test
+    void updatesNeverChangeCreatedAt() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer saved = underTest.saveAndFlush(new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE));
+        entityManager.clear();
+        Customer detached = new Customer(saved.getId(), "Renamed", email, "password", 21,
+                Gender.MALE, null, Role.USER, null);
+
+        // When
+        underTest.saveAndFlush(detached);
+        entityManager.clear();
+
+        // Then
+        assertThat(underTest.findById(saved.getId())).hasValueSatisfying(c -> {
+            assertThat(c.getName()).isEqualTo("Renamed");
+            assertThat(c.getCreatedAt()).isEqualTo(saved.getCreatedAt());
+        });
+    }
+
+    @Test
+    void canBackdateCreatedAt() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer saved = underTest.saveAndFlush(new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE));
+        Instant createdAt = Instant.parse("2025-12-24T18:30:00Z");
+
+        // When
+        underTest.backdateCreatedAt(saved.getId(), createdAt);
+
+        // Then
+        assertThat(underTest.findById(saved.getId()))
+                .hasValueSatisfying(c -> assertThat(c.getCreatedAt()).isEqualTo(createdAt));
     }
 
     @Test

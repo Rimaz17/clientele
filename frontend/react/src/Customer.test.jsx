@@ -80,7 +80,7 @@ describe('Customer page', () => {
 
     expect(await screen.findByText('Showing 1–20 of 45')).toBeInTheDocument();
     expect(screen.getByText('Customer 1')).toBeInTheDocument();
-    expect(getCustomers).toHaveBeenCalledWith({ page: 0, size: 20, sort: 'id,asc' });
+    expect(getCustomers).toHaveBeenCalledWith({ page: 0, size: 20, sort: 'createdAt,desc' });
   });
 
   it('requests the next page and records it in the URL', async () => {
@@ -93,7 +93,7 @@ describe('Customer page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 
     expect(await screen.findByText('Showing 21–40 of 45')).toBeInTheDocument();
-    expect(getCustomers).toHaveBeenLastCalledWith({ page: 1, size: 20, sort: 'id,asc' });
+    expect(getCustomers).toHaveBeenLastCalledWith({ page: 1, size: 20, sort: 'createdAt,desc' });
     expect(screen.getByTestId('location')).toHaveTextContent('?page=2');
   });
 
@@ -127,7 +127,7 @@ describe('Customer page', () => {
       expect(getCustomers).toHaveBeenLastCalledWith({
         page: 0,
         size: 20,
-        sort: 'id,asc',
+        sort: 'createdAt,desc',
         gender: 'FEMALE',
       }),
     );
@@ -151,7 +151,7 @@ describe('Customer page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
 
     await waitFor(() =>
-      expect(getCustomers).toHaveBeenLastCalledWith({ page: 0, size: 20, sort: 'id,asc' }),
+      expect(getCustomers).toHaveBeenLastCalledWith({ page: 0, size: 20, sort: 'createdAt,desc' }),
     );
     expect(screen.getByTestId('location')).toBeEmptyDOMElement();
   });
@@ -164,7 +164,7 @@ describe('Customer page', () => {
     renderPage('/dashboard/customers?page=3');
 
     expect(await screen.findByText('Showing 21–21 of 21')).toBeInTheDocument();
-    expect(getCustomers).toHaveBeenLastCalledWith({ page: 1, size: 20, sort: 'id,asc' });
+    expect(getCustomers).toHaveBeenLastCalledWith({ page: 1, size: 20, sort: 'createdAt,desc' });
     expect(screen.getByTestId('location')).toHaveTextContent('?page=2');
   });
 

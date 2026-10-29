@@ -11,24 +11,21 @@ import {
     Link,
     Menu,
     MenuButton,
-    MenuDivider,
     MenuItem,
     MenuList,
     Text,
     useColorModeValue,
     useDisclosure,
-    VStack,
-    Image
+    VStack
 } from '@chakra-ui/react';
 
 import {
-    FiBell,
+    FiBarChart2,
     FiChevronDown,
-    FiHome,
     FiMenu,
-    FiSettings,
     FiUsers
 } from 'react-icons/fi';
+import {Link as RouterLink, useLocation} from "react-router-dom";
 import {useAuth} from "../context/AuthContext.jsx";
 
 // "ROLE_ADMIN" -> "Admin"
@@ -38,9 +35,8 @@ const roleLabel = (role) => {
 };
 
 const LinkItems = [
-    {name: 'Home', route: '/dashboard', icon: FiHome},
+    {name: 'Dashboard', route: '/dashboard', icon: FiBarChart2},
     {name: 'Customers', route: '/dashboard/customers',  icon: FiUsers},
-    {name: 'Settings', route: '/dashboard/settings', icon: FiSettings},
 ];
 
 export default function SidebarWithHeader({children}) {
@@ -83,16 +79,10 @@ const SidebarContent = ({onClose, ...rest}) => {
             pos="fixed"
             h="full"
             {...rest}>
-            <Flex h="20" flexDirection="column" alignItems="center" mx="8" mb={75} mt={2} justifyContent="space-between">
-                <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold" mb={5}>
-                    Dashboard
+            <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+                <Text fontSize="2xl" fontWeight="bold" letterSpacing="tight">
+                    Clientele
                 </Text>
-                <Image
-                    borderRadius='full'
-                    boxSize='75px'
-                    src='https://user-images.githubusercontent.com/40702606/210880158-e7d698c2-b19a-4057-b415-09f48a746753.png'
-                    alt='Amigoscode'
-                />
                 <CloseButton display={{base: 'flex', md: 'none'}} onClick={onClose}/>
             </Flex>
             {LinkItems.map((link) => (
@@ -104,18 +94,31 @@ const SidebarContent = ({onClose, ...rest}) => {
     );
 };
 
+// The link to the page being shown is marked with aria-current and a tint.
+// White hover text on blue.600 keeps AA contrast.
 const NavItem = ({icon, route, children, ...rest}) => {
+    const isCurrent = useLocation().pathname === route;
     return (
-        <Link href={route} style={{textDecoration: 'none'}} _focus={{boxShadow: 'none'}}>
+        <Link
+            as={RouterLink}
+            to={route}
+            aria-current={isCurrent ? 'page' : undefined}
+            display="block"
+            mx="4"
+            borderRadius="lg"
+            style={{textDecoration: 'none'}}
+            _focusVisible={{boxShadow: 'outline'}}>
             <Flex
                 align="center"
                 p="4"
-                mx="4"
                 borderRadius="lg"
                 role="group"
                 cursor="pointer"
+                bg={isCurrent ? 'blue.50' : undefined}
+                color={isCurrent ? 'blue.700' : undefined}
+                fontWeight={isCurrent ? 'semibold' : undefined}
                 _hover={{
-                    bg: 'blue.400',
+                    bg: 'blue.600',
                     color: 'white',
                 }}
                 {...rest}>
@@ -159,18 +162,12 @@ const MobileNav = ({onOpen, ...rest}) => {
             <Text
                 display={{base: 'flex', md: 'none'}}
                 fontSize="2xl"
-                fontFamily="monospace"
-                fontWeight="bold">
-                Logo
+                fontWeight="bold"
+                letterSpacing="tight">
+                Clientele
             </Text>
 
             <HStack spacing={{base: '0', md: '6'}}>
-                <IconButton
-                    size="lg"
-                    variant="ghost"
-                    aria-label="open menu"
-                    icon={<FiBell/>}
-                />
                 <Flex alignItems={'center'}>
                     <Menu>
                         <MenuButton
@@ -204,10 +201,6 @@ const MobileNav = ({onOpen, ...rest}) => {
                         <MenuList
                             bg={useColorModeValue('white', 'gray.900')}
                             borderColor={useColorModeValue('gray.200', 'gray.700')}>
-                            <MenuItem>Profile</MenuItem>
-                            <MenuItem>Settings</MenuItem>
-                            <MenuItem>Billing</MenuItem>
-                            <MenuDivider/>
                             <MenuItem onClick={logOut}>
                                 Sign out
                             </MenuItem>

@@ -13,9 +13,9 @@ flowchart LR
 
     subgraph API["Spring Boot API"]
         Filter["JWT authentication filter<br/>(Spring Security)"]
-        Controllers["Controllers<br/>auth, customers, ping"]
-        Services["Services<br/>AuthenticationService, CustomerService, S3Service"]
-        DAO["CustomerDao<br/>JDBC and JPA implementations"]
+        Controllers["Controllers<br/>auth, customers, stats, ping"]
+        Services["Services<br/>AuthenticationService, CustomerService,<br/>CustomerStatsService, S3Service"]
+        DAO["CustomerDao (JDBC and JPA)<br/>CustomerStatsDao (JDBC)"]
     end
 
     DB[("PostgreSQL<br/>schema managed by Flyway")]
@@ -32,7 +32,7 @@ flowchart LR
 
 ## Layers
 
-The backend is an N-tier application, organised by feature package (`auth`, `customer`, `exception`, `jwt`, `s3`, `security`).
+The backend is an N-tier application, organised by feature package (`auth`, `bootstrap`, `customer`, `exception`, `jwt`, `s3`, `security`, `stats`).
 
 | Layer | Responsibility |
 |---|---|
@@ -78,7 +78,29 @@ Every account has a role, `USER` or `ADMIN`, stored in the `customer.role` colum
 
 ## Customer list queries
 
-`GET /api/v1/customers` binds its query string to a validated `CustomerQuery` (page, size, sort, search, gender, age range) and returns a `PageResponse`. The JDBC DAO builds the `WHERE` clause from named parameters, orders by a column from the `CustomerSortField` whitelist with an `id` tie-breaker, and runs a matching `COUNT(*)`. The JPA DAO does the same with specifications and a `Pageable`. Search text is escaped so `%` and `_` match literally. See [ADR 0006](adr/0006-offset-pagination-and-search.md).
+`GET /api/v1/customers` binds its query string to a validated `CustomerQuery` (page, size, sort, search, gender, age range) and returns a `PageResponse`. The JDBC DAO builds the `WHERE` clause from named parameters, orders by a column from the `CustomerSortField` whitelist with an `id` tie-breaker, and runs a matching `COUNT(*)`. The JPA DAO does the same with specifications and a `Pageable`. Search text is escaped so `%` and `_` match literally. The default sort is `createdAt,desc`, newest sign-ups first. See [ADR 0006](adr/0006-offset-pagination-and-search.md).
+
+## Dashboard statistics
+
+```mermaid
+sequenceDiagram
+    participant UI as React dashboard
+    participant API as CustomerStatsController
+    participant S as CustomerStatsService
+    participant DB as PostgreSQL
+
+    UI->>API: GET /api/v1/customers/stats (Bearer JWT)
+    API->>S: getCustomerStats()
+    Note over S,DB: one read-only REPEATABLE READ transaction
+    S->>DB: totals: count, new since now - 30 days, round(avg(age), 1)
+    S->>DB: count per gender
+    S->>DB: count per age range (CASE buckets)
+    S->>DB: count per UTC month since the first of 11 months ago
+    S->>S: fill empty genders, ranges and months with 0
+    API-->>UI: 200, CustomerStats
+```
+
+`GET /api/v1/customers/stats` returns aggregates only: `totalCustomers`, `newLast30Days`, `averageAge`, `genderSplit`, `ageDistribution` (16–24 to 65+) and `signupsByMonth` (the last 12 UTC months, oldest first). The JDBC-only `CustomerStatsDao` computes each with one aggregate query, so no customer rows reach the application. Sign-up dates come from the `customer.created_at` column (migration `V4`), which the database sets on insert. See [ADR 0007](adr/0007-dashboard-aggregations.md).
 
 ## Deployment
 

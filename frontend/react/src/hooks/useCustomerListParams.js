@@ -3,15 +3,15 @@ import { useSearchParams } from 'react-router-dom';
 
 export const PAGE_SIZES = [10, 20, 50];
 export const DEFAULT_PAGE_SIZE = 20;
-export const DEFAULT_SORT = 'id,asc';
+export const DEFAULT_SORT = 'createdAt,desc';
 export const MIN_AGE = 16;
 export const MAX_AGE = 100;
 export const MAX_SEARCH_LENGTH = 100;
 
 // Mirrors the API's sort whitelist.
 export const SORT_OPTIONS = [
-  { value: 'id,asc', label: 'First added' },
-  { value: 'id,desc', label: 'Recently added' },
+  { value: 'createdAt,desc', label: 'Newest first' },
+  { value: 'createdAt,asc', label: 'Oldest first' },
   { value: 'name,asc', label: 'Name, A to Z' },
   { value: 'name,desc', label: 'Name, Z to A' },
   { value: 'email,asc', label: 'Email, A to Z' },

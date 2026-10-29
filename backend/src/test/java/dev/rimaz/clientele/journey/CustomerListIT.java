@@ -81,6 +81,13 @@ class CustomerListIT {
     }
 
     @Test
+    void listsTheNewestSignUpsFirstByDefault() {
+        assertThat(names(getPage("?search={search}", marker))).containsExactly("Cid", "Bob", "Ann");
+        assertThat(names(getPage("?search={search}&sort=createdAt,asc", marker)))
+                .containsExactly("Ann", "Bob", "Cid");
+    }
+
+    @Test
     void neverReturnsMoreThanTheRequestedSize() {
         assertThat(getPage("?size=1").content()).hasSize(1);
     }
@@ -91,8 +98,8 @@ class CustomerListIT {
             "size=101            | size    | Size must be between 1 and 100",
             "page=-1             | page    | Page must be 0 or more",
             "page=abc            | page    | Invalid value",
-            "sort=password       | sort    | Sort must be id, name, email or age, optionally followed by ,asc or ,desc",
-            "sort=name,up        | sort    | Sort must be id, name, email or age, optionally followed by ,asc or ,desc",
+            "sort=password       | sort    | Sort must be id, name, email, age or createdAt, optionally followed by ,asc or ,desc",
+            "sort=name,up        | sort    | Sort must be id, name, email, age or createdAt, optionally followed by ,asc or ,desc",
             "gender=OTHER        | gender  | Invalid value",
             "minAge=15           | minAge  | Minimum age must be between 16 and 100",
             "maxAge=abc          | maxAge  | Invalid value",

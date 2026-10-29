@@ -15,6 +15,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Random;
 
@@ -22,8 +25,9 @@ import java.util.Random;
  * Adds demo customers in the dev profile so the UI has data to show.
  * <p>
  * It only tops the table up to {@link #DEMO_CUSTOMERS} regular users, so
- * restarting the application does not add more. Integration tests turn it off
- * with {@code clientele.seed.enabled=false}.
+ * restarting the application does not add more. Their sign-up dates are spread
+ * over the last {@link #SIGNUP_SPREAD}, so the dashboard has a history to
+ * chart. Integration tests turn it off with {@code clientele.seed.enabled=false}.
  */
 @Component
 @Profile("dev")
@@ -33,6 +37,8 @@ public class DevDataSeeder implements ApplicationRunner {
     // Enough for a few pages of the customer list at the default page size.
     static final int DEMO_CUSTOMERS = 50;
     static final String DEMO_PASSWORD = "password";
+    // Inside the dashboard's 12-month sign-up chart.
+    static final Duration SIGNUP_SPREAD = Duration.ofDays(330);
 
     // Matches the 15-character limit of the sign-up and update forms.
     private static final int MAX_NAME_LENGTH = 15;
@@ -41,13 +47,16 @@ public class DevDataSeeder implements ApplicationRunner {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
     private final Faker faker = new Faker();
     private final Random random = new Random();
 
     public DevDataSeeder(CustomerRepository customerRepository,
-                         PasswordEncoder passwordEncoder) {
+                         PasswordEncoder passwordEncoder,
+                         Clock clock) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.clock = clock;
     }
 
     @Override
@@ -59,7 +68,8 @@ public class DevDataSeeder implements ApplicationRunner {
         // BCrypt is slow on purpose, so every demo customer shares one hash.
         String passwordHash = passwordEncoder.encode(DEMO_PASSWORD);
         for (int i = 0; i < missing; i++) {
-            customerRepository.save(randomCustomer(passwordHash));
+            Customer customer = customerRepository.save(randomCustomer(passwordHash));
+            customerRepository.backdateCreatedAt(customer.getId(), randomSignupTime());
         }
         log.info("Seeded {} demo customers", missing);
     }
@@ -79,6 +89,14 @@ public class DevDataSeeder implements ApplicationRunner {
                 random.nextInt(16, 101),
                 random.nextBoolean() ? Gender.MALE : Gender.FEMALE
         );
+    }
+
+    // 1 - sqrt(u) puts more sign-ups in recent months than in older ones, like a
+    // product that is growing.
+    private Instant randomSignupTime() {
+        double ageFraction = 1 - Math.sqrt(random.nextDouble());
+        long ageSeconds = (long) (SIGNUP_SPREAD.toSeconds() * ageFraction);
+        return clock.instant().minusSeconds(ageSeconds);
     }
 
     private static String displayName(Name name) {
