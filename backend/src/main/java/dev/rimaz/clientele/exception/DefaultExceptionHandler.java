@@ -16,53 +16,37 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleException(ResourceNotFoundException e,
                                                     HttpServletRequest request) {
-        ApiError apiError = new ApiError(
-                request.getRequestURI(),
-                e.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+        return buildResponse(HttpStatus.NOT_FOUND, e.getMessage(), request);
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
     public ResponseEntity<ApiError> handleException(InsufficientAuthenticationException e,
                                                     HttpServletRequest request) {
-        ApiError apiError = new ApiError(
-                request.getRequestURI(),
-                e.getMessage(),
-                HttpStatus.FORBIDDEN.value(),
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+        return buildResponse(HttpStatus.FORBIDDEN, e.getMessage(), request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleException(BadCredentialsException e,
                                                     HttpServletRequest request) {
-        ApiError apiError = new ApiError(
-                request.getRequestURI(),
-                e.getMessage(),
-                HttpStatus.UNAUTHORIZED.value(),
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+        return buildResponse(HttpStatus.UNAUTHORIZED, e.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleException(Exception e,
                                                     HttpServletRequest request) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), request);
+    }
+
+    private ResponseEntity<ApiError> buildResponse(HttpStatus status,
+                                                   String message,
+                                                   HttpServletRequest request) {
         ApiError apiError = new ApiError(
                 request.getRequestURI(),
-                e.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                message,
+                status.value(),
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(apiError, status);
     }
 
 }
