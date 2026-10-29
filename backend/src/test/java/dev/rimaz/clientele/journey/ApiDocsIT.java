@@ -41,6 +41,33 @@ class ApiDocsIT {
     }
 
     @Test
+    void documentsThePublicActuatorEndpoints() {
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/actuator/health'].get").exists()
+                .jsonPath("$.paths['/actuator/info'].get").exists();
+    }
+
+    @Test
+    void doesNotAddEveryExceptionHandlerResponseToEveryOperation() {
+        // Without springdoc.override-with-generic-response=false, /ping would
+        // claim to return 404, 409 and every other handled error.
+        webTestClient.get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/ping'].get.responses['200']").exists()
+                .jsonPath("$.paths['/ping'].get.responses['409']").doesNotExist()
+                .jsonPath("$.paths['/ping'].get.responses['500']").doesNotExist();
+    }
+
+    @Test
     void servesSwaggerUiWithoutAToken() {
         webTestClient.get()
                 .uri("/swagger-ui/index.html")

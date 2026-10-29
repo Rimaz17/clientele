@@ -34,6 +34,17 @@ management:
       exposure:
         include: "health,info"
 
+springdoc:
+  # Each endpoint documents the errors it can return. Without this, springdoc
+  # adds the response of every @ExceptionHandler to every operation.
+  override-with-generic-response: false
+  # Documents the public health and info endpoints next to the API.
+  show-actuator: true
+  swagger-ui:
+    # Swagger UI at /swagger-ui/index.html. Turn it off with
+    # SPRINGDOC_SWAGGERUI_ENABLED=false; /v3/api-docs stays available.
+    enabled: true
+
 spring:
   profiles:
     # Local runs and tests use the dev profile unless a profile is set explicitly.
