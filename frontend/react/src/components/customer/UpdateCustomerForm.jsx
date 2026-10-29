@@ -1,6 +1,6 @@
 import {Form, Formik} from 'formik';
 import * as Yup from 'yup';
-import {Box, Button, Image, Stack, VStack} from "@chakra-ui/react";
+import {Avatar, Box, Button, Stack, Text, VStack} from "@chakra-ui/react";
 import {TextField} from "../shared/FormFields.jsx";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
@@ -8,17 +8,29 @@ import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
 
-// Mirrors the image types the API accepts for profile pictures.
+// Mirrors the image types and the 10 MB upload limit the API accepts.
 const ACCEPTED_IMAGE_TYPES = {
     "image/jpeg": [],
     "image/png": [],
     "image/webp": []
 }
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024
+
+const rejectionMessage = (fileRejections) => {
+    const code = fileRejections[0]?.errors[0]?.code
+    if (code === "file-too-large") {
+        return "The picture must be 10 MB or smaller"
+    }
+    if (code === "too-many-files") {
+        return "Choose one picture at a time"
+    }
+    return "Choose a JPEG, PNG or WebP image"
+}
 
 const MyDropzone = ({ customerId, fetchCustomers }) => {
-    const onDrop = useCallback(acceptedFiles => {
+    const onDrop = useCallback((acceptedFiles, fileRejections) => {
         if (acceptedFiles.length === 0) {
-            errorNotification("Upload failed", "Choose a JPEG, PNG or WebP image")
+            errorNotification("Upload failed", rejectionMessage(fileRejections))
             return
         }
         const formData = new FormData();
@@ -37,24 +49,28 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
         onDrop,
         accept: ACCEPTED_IMAGE_TYPES,
+        maxSize: MAX_IMAGE_SIZE,
         maxFiles: 1
     })
 
     return (
-        <Box {...getRootProps()}
+        <Box {...getRootProps({role: "button", "aria-label": "Upload a new profile picture"})}
              w={'100%'}
              textAlign={'center'}
              border={'dashed'}
              borderColor={'gray.200'}
              borderRadius={'3xl'}
              p={6}
-             rounded={'md'}>
+             rounded={'md'}
+             cursor={'pointer'}
+             _focusVisible={{boxShadow: 'outline', outline: 'none'}}>
             <input {...getInputProps()} />
-            {
-                isDragActive ?
-                    <p>Drop the picture here ...</p> :
-                    <p>Drag &apos;n&apos; drop picture here, or click to select picture</p>
-            }
+            <Text>
+                {isDragActive ? "Drop the picture here" : "Drag a picture here, or click to choose one"}
+            </Text>
+            <Text fontSize={'sm'} color={'gray.600'} mt={1}>
+                JPEG, PNG or WebP, up to 10 MB
+            </Text>
         </Box>
     )
 }
@@ -63,10 +79,11 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
     return (
         <>
             <VStack spacing={'5'} mb={'5'}>
-                <Image
-                    borderRadius={'full'}
+                {/* Avatar falls back to the customer's initials when there is no picture yet. */}
+                <Avatar
                     boxSize={'150px'}
-                    objectFit={'cover'}
+                    size={'2xl'}
+                    name={initialValues.name}
                     src={customerProfilePictureUrl(customerId)}
                 />
                 <MyDropzone
