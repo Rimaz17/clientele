@@ -62,6 +62,8 @@ sequenceDiagram
     API-->>UI: 200, customer list
 ```
 
+Tokens are signed with HS256 using the secret in `clientele.jwt.secret` and carry the configured issuer and expiry (`JwtProperties`). The `dev` profile, active by default, supplies a development-only secret; every other environment sets `CLIENTELE_JWT_SECRET` or the API does not start. An invalid, expired or foreign token leaves the request unauthenticated, so protected endpoints answer 403.
+
 ## Deployment
 
 The backend image is built with Jib and the React image with its Dockerfile. `docker-compose.yml` runs PostgreSQL, the API and the React app together. `Dockerrun.aws.json` describes an Elastic Beanstalk deployment; the deployment workflow only runs when triggered manually.
