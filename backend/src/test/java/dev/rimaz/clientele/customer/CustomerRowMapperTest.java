@@ -24,6 +24,7 @@ class CustomerRowMapperTest {
         when(resultSet.getString("gender")).thenReturn("FEMALE");
         when(resultSet.getString("password")).thenReturn("password");
         when(resultSet.getString("profile_image_id")).thenReturn("22222");
+        when(resultSet.getString("role")).thenReturn("ADMIN");
 
 
         // When
@@ -37,7 +38,8 @@ class CustomerRowMapperTest {
                 "password",
                 19,
                 Gender.FEMALE,
-                "22222"
+                "22222",
+                Role.ADMIN
         );
         assertThat(actual).isEqualTo(expected);
     }

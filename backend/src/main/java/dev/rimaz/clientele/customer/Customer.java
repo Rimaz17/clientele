@@ -66,6 +66,13 @@ public class Customer implements UserDetails {
     )
     private String profileImageId;
 
+    @Column(
+            nullable = false,
+            length = 20
+    )
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
     public Customer() {
     }
 
@@ -92,6 +99,18 @@ public class Customer implements UserDetails {
                     String profileImageId) {
        this(id, name, email, password, age, gender);
        this.profileImageId = profileImageId;
+    }
+
+    public Customer(Integer id,
+                    String name,
+                    String email,
+                    String password,
+                    Integer age,
+                    Gender gender,
+                    String profileImageId,
+                    Role role) {
+        this(id, name, email, password, age, gender, profileImageId);
+        this.role = role;
     }
 
     public Customer(String name,
@@ -154,9 +173,17 @@ public class Customer implements UserDetails {
         this.profileImageId = profileImageId;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority(role.authority()));
     }
 
     @Override
@@ -194,12 +221,12 @@ public class Customer implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
-        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name) && Objects.equals(email, customer.email) && Objects.equals(age, customer.age) && gender == customer.gender && Objects.equals(password, customer.password) && Objects.equals(profileImageId, customer.profileImageId);
+        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name) && Objects.equals(email, customer.email) && Objects.equals(age, customer.age) && gender == customer.gender && Objects.equals(password, customer.password) && Objects.equals(profileImageId, customer.profileImageId) && role == customer.role;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, email, age, gender, password, profileImageId);
+        return Objects.hash(id, name, email, age, gender, password, profileImageId, role);
     }
 
     @Override
@@ -212,6 +239,7 @@ public class Customer implements UserDetails {
                 ", gender=" + gender +
                 ", password='" + password + '\'' +
                 ", profileImageId='" + profileImageId + '\'' +
+                ", role=" + role +
                 '}';
     }
 }

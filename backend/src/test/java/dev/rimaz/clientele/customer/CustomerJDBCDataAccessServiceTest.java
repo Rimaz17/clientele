@@ -404,4 +404,45 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
                         c -> assertThat(c.getProfileImageId()).isEqualTo("2222")
                 );
     }
+
+    @Test
+    void insertCustomerStoresTheUserRoleByDefault() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer customer = new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE);
+
+        // When
+        underTest.insertCustomer(customer);
+
+        // Then
+        assertThat(underTest.selectUserByEmail(email))
+                .hasValueSatisfying(c -> assertThat(c.getRole()).isEqualTo(Role.USER));
+    }
+
+    @Test
+    void insertCustomerStoresAndMapsTheAdminRole() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer customer = new Customer(
+                null,
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.FEMALE,
+                null,
+                Role.ADMIN);
+
+        // When
+        underTest.insertCustomer(customer);
+
+        // Then
+        Customer actual = underTest.selectUserByEmail(email).orElseThrow();
+        assertThat(actual.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(underTest.selectCustomerById(actual.getId()))
+                .hasValueSatisfying(c -> assertThat(c.getRole()).isEqualTo(Role.ADMIN));
+    }
 }
