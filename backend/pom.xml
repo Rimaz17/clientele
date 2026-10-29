@@ -24,6 +24,8 @@
         <docker.image.name>clientele-api</docker.image.name>
         <docker.image.tag/>
         <jsonwebtoken.version>0.11.5</jsonwebtoken.version>
+        <!-- The 2.0.x to 2.1.x line is the one built for Spring Boot 3.0.x. -->
+        <springdoc.version>2.1.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -108,6 +110,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <dependency>
