@@ -92,7 +92,7 @@ In development (the `dev` profile) the API creates an admin account on startup:
 |---|---|---|
 | `admin@clientele.dev` | `admin-password` | Admin |
 
-These credentials are for local development only. You can also create a regular account on the sign-up page. The `dev` profile adds a demo customer the first time it starts (not on every start); demo customers use the password `password`.
+These credentials are for local development only. You can also create a regular account on the sign-up page. The `dev` profile tops the database up to 50 demo customers when it starts with fewer, so the list has several pages; restarting does not add more. Demo customers use the password `password`.
 
 ### Roles
 
