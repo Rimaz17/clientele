@@ -1,6 +1,7 @@
 package dev.rimaz.clientele.customer;
 
 import dev.rimaz.clientele.jwt.JWTUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<?> registerCustomer(
-            @RequestBody CustomerRegistrationRequest request) {
+            @Valid @RequestBody CustomerRegistrationRequest request) {
         customerService.addCustomer(request);
         String jwtToken = jwtUtil.issueToken(request.email(), "ROLE_USER");
         return ResponseEntity.ok()
