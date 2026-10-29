@@ -1,10 +1,13 @@
 package dev.rimaz.clientele.customer;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -73,6 +76,19 @@ public class Customer implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
+    // Set by the database's DEFAULT when the row is inserted and never written
+    // by the application. Hibernate reads it back after the insert. The explicit
+    // column definition matches what PostgreSQL reports, so schema validation
+    // accepts the TIMESTAMPTZ column.
+    @Column(
+            nullable = false,
+            insertable = false,
+            updatable = false,
+            columnDefinition = "TIMESTAMPTZ"
+    )
+    @Generated(GenerationTime.INSERT)
+    private Instant createdAt;
+
     public Customer() {
     }
 
@@ -111,6 +127,19 @@ public class Customer implements UserDetails {
                     Role role) {
         this(id, name, email, password, age, gender, profileImageId);
         this.role = role;
+    }
+
+    public Customer(Integer id,
+                    String name,
+                    String email,
+                    String password,
+                    Integer age,
+                    Gender gender,
+                    String profileImageId,
+                    Role role,
+                    Instant createdAt) {
+        this(id, name, email, password, age, gender, profileImageId, role);
+        this.createdAt = createdAt;
     }
 
     public Customer(String name,
@@ -181,6 +210,10 @@ public class Customer implements UserDetails {
         this.role = role;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.authority()));
@@ -225,12 +258,12 @@ public class Customer implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
-        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name) && Objects.equals(email, customer.email) && Objects.equals(age, customer.age) && gender == customer.gender && Objects.equals(password, customer.password) && Objects.equals(profileImageId, customer.profileImageId) && role == customer.role;
+        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name) && Objects.equals(email, customer.email) && Objects.equals(age, customer.age) && gender == customer.gender && Objects.equals(password, customer.password) && Objects.equals(profileImageId, customer.profileImageId) && role == customer.role && Objects.equals(createdAt, customer.createdAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, email, age, gender, password, profileImageId, role);
+        return Objects.hash(id, name, email, age, gender, password, profileImageId, role, createdAt);
     }
 
     @Override
@@ -244,6 +277,7 @@ public class Customer implements UserDetails {
                 ", password='" + password + '\'' +
                 ", profileImageId='" + profileImageId + '\'' +
                 ", role=" + role +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }

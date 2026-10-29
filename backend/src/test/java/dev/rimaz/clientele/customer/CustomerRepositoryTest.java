@@ -160,6 +160,50 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
     }
 
     @Test
+    void theDatabaseSetsCreatedAtOnInsert() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer customer = new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE);
+
+        // When
+        Customer saved = underTest.saveAndFlush(customer);
+        entityManager.clear();
+
+        // Then
+        assertThat(saved.getCreatedAt()).isNotNull();
+        assertThat(underTest.findCustomerByEmail(email))
+                .hasValueSatisfying(c -> assertThat(c.getCreatedAt()).isEqualTo(saved.getCreatedAt()));
+    }
+
+    @Test
+    void updatesNeverChangeCreatedAt() {
+        // Given
+        String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
+        Customer saved = underTest.saveAndFlush(new Customer(
+                FAKER.name().fullName(),
+                email,
+                "password", 20,
+                Gender.MALE));
+        entityManager.clear();
+        Customer detached = new Customer(saved.getId(), "Renamed", email, "password", 21,
+                Gender.MALE, null, Role.USER, null);
+
+        // When
+        underTest.saveAndFlush(detached);
+        entityManager.clear();
+
+        // Then
+        assertThat(underTest.findById(saved.getId())).hasValueSatisfying(c -> {
+            assertThat(c.getName()).isEqualTo("Renamed");
+            assertThat(c.getCreatedAt()).isEqualTo(saved.getCreatedAt());
+        });
+    }
+
+    @Test
     void countsCustomersByRole() {
         // Given
         Customer user = new Customer(
