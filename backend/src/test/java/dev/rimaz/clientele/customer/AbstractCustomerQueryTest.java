@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -64,7 +67,7 @@ abstract class AbstractCustomerQueryTest extends AbstractTestcontainers {
 
         assertThat(names(dao().selectCustomers(query(marker, Gender.FEMALE, null, null, null))))
                 .containsExactly("Ann");
-        assertThat(names(dao().selectCustomers(query(marker, Gender.MALE, null, null, null))))
+        assertThat(names(dao().selectCustomers(query(marker, Gender.MALE, null, null, "name,asc"))))
                 .containsExactly("Bob", "Cid");
     }
 
@@ -104,17 +107,36 @@ abstract class AbstractCustomerQueryTest extends AbstractTestcontainers {
             "email,asc,  Cid|Ann|Bob",
             "email,desc, Bob|Ann|Cid",
             "age,asc,    Bob|Ann|Cid",
-            "age,desc,   Cid|Ann|Bob"
+            "age,desc,   Cid|Ann|Bob",
+            "createdAt,asc,  Bob|Ann|Cid",
+            "createdAt,desc, Cid|Ann|Bob"
     })
     void sortsByEveryFieldInBothDirections(String field, String direction, String expectedNames) {
         // Inserted in an order that differs from every sort order below.
         insert("Bob", "c-" + marker + "@example.com", 20, Gender.MALE);
         insert("Cid", "a-" + marker + "@example.com", 40, Gender.MALE);
         insert("Ann", "b-" + marker + "@example.com", 30, Gender.FEMALE);
+        // Signed up in an order that differs from the insert (id) order.
+        setCreatedAt("c-" + marker + "@example.com", Instant.parse("2026-01-10T00:00:00Z"));
+        setCreatedAt("b-" + marker + "@example.com", Instant.parse("2026-02-10T00:00:00Z"));
+        setCreatedAt("a-" + marker + "@example.com", Instant.parse("2026-03-10T00:00:00Z"));
 
         PageResponse<Customer> page = dao().selectCustomers(query(marker, null, null, null, field + "," + direction));
 
         assertThat(names(page)).containsExactly(expectedNames.split("\\|"));
+    }
+
+    @Test
+    void sortsByNewestSignUpFirstByDefault() {
+        insert("Old", "old-" + marker + "@example.com", 30, Gender.MALE);
+        insert("New", "new-" + marker + "@example.com", 30, Gender.MALE);
+        insert("Mid", "mid-" + marker + "@example.com", 30, Gender.MALE);
+        setCreatedAt("old-" + marker + "@example.com", Instant.parse("2025-12-01T00:00:00Z"));
+        setCreatedAt("new-" + marker + "@example.com", Instant.parse("2026-02-01T00:00:00Z"));
+        setCreatedAt("mid-" + marker + "@example.com", Instant.parse("2026-01-01T00:00:00Z"));
+
+        assertThat(names(dao().selectCustomers(query(marker, null, null, null, null))))
+                .containsExactly("New", "Mid", "Old");
     }
 
     @Test
@@ -177,6 +199,13 @@ abstract class AbstractCustomerQueryTest extends AbstractTestcontainers {
 
     private void insert(String name, String email, int age, Gender gender) {
         dao().insertCustomer(new Customer(name, email, "password", age, gender));
+    }
+
+    // Overrides the database-set created_at, so a test controls the sign-up
+    // order. Both implementations commit their inserts, so plain JDBC sees them.
+    private static void setCreatedAt(String email, Instant createdAt) {
+        getJdbcTemplate().update("UPDATE customer SET created_at = ? WHERE email = ?",
+                OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC), email);
     }
 
     // Tagged with the marker, so a search for the marker finds it by email.

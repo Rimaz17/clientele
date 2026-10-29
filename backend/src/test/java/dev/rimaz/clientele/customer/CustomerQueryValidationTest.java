@@ -40,8 +40,8 @@ class CustomerQueryValidationTest {
 
         assertThat(query.page()).isZero();
         assertThat(query.size()).isEqualTo(20);
-        assertThat(query.sortField()).isEqualTo(CustomerSortField.ID);
-        assertThat(query.sortDirection()).isEqualTo(Sort.Direction.ASC);
+        assertThat(query.sortField()).isEqualTo(CustomerSortField.CREATED_AT);
+        assertThat(query.sortDirection()).isEqualTo(Sort.Direction.DESC);
         assertThat(violations(query)).isEmpty();
     }
 

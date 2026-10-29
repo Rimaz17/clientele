@@ -11,7 +11,8 @@ public enum CustomerSortField {
     ID("id", "id"),
     NAME("name", "name"),
     EMAIL("email", "email"),
-    AGE("age", "age");
+    AGE("age", "age"),
+    CREATED_AT("createdAt", "created_at");
 
     // The name used in the API's sort parameter, which is also the JPA attribute.
     private final String property;
