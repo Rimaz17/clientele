@@ -9,7 +9,9 @@ import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,6 +71,22 @@ class DefaultExceptionHandlerTest {
         ResponseEntity<ApiError> response = underTest.handleException(exception, request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "Parameter 'customerId' has an invalid value");
+    }
+
+    @Test
+    void missingRequestParameterReturns400() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new MissingServletRequestParameterException("file", "MultipartFile"), request);
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "Required parameter 'file' is missing");
+    }
+
+    @Test
+    void missingRequestPartReturns400() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new MissingServletRequestPartException("file"), request);
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "Required part 'file' is missing");
     }
 
     @Test

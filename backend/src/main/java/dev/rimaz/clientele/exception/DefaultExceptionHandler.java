@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
 
@@ -44,6 +46,20 @@ public class DefaultExceptionHandler {
     public ResponseEntity<ApiError> handleException(MethodArgumentTypeMismatchException e,
                                                     HttpServletRequest request) {
         String message = "Parameter '%s' has an invalid value".formatted(e.getName());
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiError> handleException(MissingServletRequestParameterException e,
+                                                    HttpServletRequest request) {
+        String message = "Required parameter '%s' is missing".formatted(e.getParameterName());
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> handleException(MissingServletRequestPartException e,
+                                                    HttpServletRequest request) {
+        String message = "Required part '%s' is missing".formatted(e.getRequestPartName());
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
 
