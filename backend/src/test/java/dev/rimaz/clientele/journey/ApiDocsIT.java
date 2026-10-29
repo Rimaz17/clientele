@@ -217,6 +217,18 @@ class ApiDocsIT {
     }
 
     @Test
+    void sortsTheGroupsAndOperationsInSwaggerUi() {
+        webTestClient.get()
+                .uri("/v3/api-docs/swagger-config")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.tagsSorter").isEqualTo("alpha")
+                .jsonPath("$.operationsSorter").isEqualTo("alpha");
+    }
+
+    @Test
     void servesSwaggerUiWithoutAToken() {
         webTestClient.get()
                 .uri("/swagger-ui/index.html")

@@ -44,6 +44,11 @@ springdoc:
     # Swagger UI at /swagger-ui/index.html. Turn it off with
     # SPRINGDOC_SWAGGERUI_ENABLED=false; /v3/api-docs stays available.
     enabled: true
+    # Groups in alphabetical order, which puts Authentication first, and each
+    # group's operations by path, so the list and sign-up come before the
+    # single-customer operations.
+    tags-sorter: alpha
+    operations-sorter: alpha
 
 spring:
   profiles:
