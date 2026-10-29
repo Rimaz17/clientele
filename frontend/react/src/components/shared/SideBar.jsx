@@ -21,7 +21,6 @@ import {
 
 import {
     FiBarChart2,
-    FiBell,
     FiChevronDown,
     FiMenu,
     FiUsers
@@ -169,12 +168,6 @@ const MobileNav = ({onOpen, ...rest}) => {
             </Text>
 
             <HStack spacing={{base: '0', md: '6'}}>
-                <IconButton
-                    size="lg"
-                    variant="ghost"
-                    aria-label="open menu"
-                    icon={<FiBell/>}
-                />
                 <Flex alignItems={'center'}>
                     <Menu>
                         <MenuButton
