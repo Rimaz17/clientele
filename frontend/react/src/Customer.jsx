@@ -21,7 +21,7 @@ const Customer = () => {
     const fetchCustomers = () => {
         setLoading(true);
         getCustomers().then(res => {
-            setCustomers(res.data)
+            setCustomers(res.data.content)
         }).catch(err => {
             setError(getApiErrorMessage(err))
             errorNotification(
