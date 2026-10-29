@@ -10,6 +10,7 @@ import { getCustomers } from "./services/client.js";
 import CardWithImage from "./components/customer/CustomerCard.jsx";
 import CreateCustomerDrawer from "./components/customer/CreateCustomerDrawer.jsx";
 import {errorNotification} from "./services/notification.js";
+import {getApiErrorMessage} from "./services/apiErrors.js";
 
 const Customer = () => {
 
@@ -22,10 +23,10 @@ const Customer = () => {
         getCustomers().then(res => {
             setCustomers(res.data)
         }).catch(err => {
-            setError(err.response.data.message)
+            setError(getApiErrorMessage(err))
             errorNotification(
                 err.code,
-                err.response.data.message
+                getApiErrorMessage(err)
             )
         }).finally(() => {
             setLoading(false)

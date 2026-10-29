@@ -16,6 +16,7 @@ import {Formik, Form, useField} from "formik";
 import * as Yup from 'yup';
 import {useAuth} from "../context/AuthContext.jsx";
 import {errorNotification} from "../../services/notification.js";
+import {getApiErrorMessage} from "../../services/apiErrors.js";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 
@@ -64,7 +65,7 @@ const LoginForm = () => {
                 }).catch(err => {
                     errorNotification(
                         err.code,
-                        err.response.data.message
+                        getApiErrorMessage(err)
                     )
                 }).finally(() => {
                     setSubmitting(false);
