@@ -36,7 +36,8 @@ class ApiDocsIT {
             "post   | /api/v1/customers/{customerId}/profile-image   | 200 400 403 404 413",
             "get    | /api/v1/customers/{customerId}/profile-image   | 200 400 404",
             "post   | /api/v1/auth/login                             | 200 400 401",
-            "get    | /ping                                          | 200"
+            "get    | /ping                                          | 200",
+            "get    | /api/v1/customers/stats                        | 200 403"
     })
     void documentsEveryResponseOfAnEndpoint(String method, String path, String statuses) throws Exception {
         JsonNode operation = apiDocs().path("paths").path(path).path(method);
