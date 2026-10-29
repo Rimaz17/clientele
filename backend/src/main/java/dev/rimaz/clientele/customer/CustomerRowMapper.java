@@ -18,6 +18,7 @@ public class CustomerRowMapper implements RowMapper<Customer> {
                 rs.getInt("age"),
                 Gender.valueOf(rs.getString("gender")),
                 rs.getString("profile_image_id"),
-                Role.valueOf(rs.getString("role")));
+                Role.valueOf(rs.getString("role")),
+                rs.getTimestamp("created_at").toInstant());
     }
 }

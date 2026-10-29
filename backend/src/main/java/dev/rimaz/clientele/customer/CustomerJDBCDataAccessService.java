@@ -35,7 +35,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao {
         parameters.addValue("limit", query.size());
         parameters.addValue("offset", (long) query.page() * query.size());
         var sql = """
-                SELECT id, name, email, password, age, gender, profile_image_id, role
+                SELECT id, name, email, password, age, gender, profile_image_id, role, created_at
                 FROM customer
                 """ + where + orderByClause(query) + " LIMIT :limit OFFSET :offset";
         List<Customer> content = namedParameterJdbcTemplate.query(sql, parameters, customerRowMapper);
@@ -77,7 +77,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao {
     @Override
     public Optional<Customer> selectCustomerById(Integer id) {
         var sql = """
-                SELECT id, name, email, password, age, gender, profile_image_id, role
+                SELECT id, name, email, password, age, gender, profile_image_id, role, created_at
                 FROM customer
                 WHERE id = ?
                 """;
@@ -171,7 +171,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao {
     @Override
     public Optional<Customer> selectUserByEmail(String email) {
         var sql = """
-                SELECT id, name, email, password, age, gender, profile_image_id, role
+                SELECT id, name, email, password, age, gender, profile_image_id, role, created_at
                 FROM customer
                 WHERE email = ?
                 """;

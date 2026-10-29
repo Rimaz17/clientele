@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -15,6 +17,7 @@ class CustomerRowMapperTest {
     void mapRow() throws SQLException {
         // Given
         CustomerRowMapper customerRowMapper = new CustomerRowMapper();
+        Instant createdAt = Instant.parse("2026-03-14T09:26:53.589793Z");
 
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.getInt("id")).thenReturn(1);
@@ -25,6 +28,7 @@ class CustomerRowMapperTest {
         when(resultSet.getString("password")).thenReturn("password");
         when(resultSet.getString("profile_image_id")).thenReturn("22222");
         when(resultSet.getString("role")).thenReturn("ADMIN");
+        when(resultSet.getTimestamp("created_at")).thenReturn(Timestamp.from(createdAt));
 
 
         // When
@@ -39,7 +43,8 @@ class CustomerRowMapperTest {
                 19,
                 Gender.FEMALE,
                 "22222",
-                Role.ADMIN
+                Role.ADMIN,
+                createdAt
         );
         assertThat(actual).isEqualTo(expected);
     }

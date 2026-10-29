@@ -172,6 +172,7 @@ abstract class AbstractCustomerQueryTest extends AbstractTestcontainers {
         assertThat(listed.getAge()).isEqualTo(30);
         assertThat(listed.getGender()).isEqualTo(Gender.FEMALE);
         assertThat(listed.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(listed.getCreatedAt()).isNotNull();
     }
 
     private void insert(String name, String email, int age, Gender gender) {
