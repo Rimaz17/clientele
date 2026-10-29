@@ -25,6 +25,12 @@ public class DefaultExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, e.getMessage(), request);
     }
 
+    @ExceptionHandler(RequestValidationException.class)
+    public ResponseEntity<ApiError> handleException(RequestValidationException e,
+                                                    HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
+    }
+
     @ExceptionHandler(InsufficientAuthenticationException.class)
     public ResponseEntity<ApiError> handleException(InsufficientAuthenticationException e,
                                                     HttpServletRequest request) {

@@ -40,6 +40,14 @@ class DefaultExceptionHandlerTest {
     }
 
     @Test
+    void requestValidationReturns400() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new RequestValidationException("no data changes found"), request);
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "no data changes found");
+    }
+
+    @Test
     void insufficientAuthenticationReturns403() {
         ResponseEntity<ApiError> response = underTest.handleException(
                 new InsufficientAuthenticationException("Full authentication is required"), request);
