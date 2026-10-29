@@ -34,7 +34,12 @@ export class CustomerComponent implements OnInit {
       next: (data) => {
         this.customers = data;
         console.log(data);
-      }
+      },
+      error: (err: HttpErrorResponse) => this.messageService.add({
+        severity: 'error',
+        summary: 'Could not load customers',
+        detail: err.error?.message ?? 'Something went wrong. Please try again.'
+      })
     })
   }
 
@@ -100,11 +105,15 @@ export class CustomerComponent implements OnInit {
     });
   }
 
+  // A 403 on a change means the user is neither an admin nor that customer,
+  // which the API's generic "Access denied" does not explain.
   private showError(err: HttpErrorResponse) {
     this.messageService.add({
       severity: 'error',
       summary: 'Error',
-      detail: err.error?.message ?? 'Something went wrong. Please try again.'
+      detail: err.status === 403
+        ? 'You can only change your own account.'
+        : err.error?.message ?? 'Something went wrong. Please try again.'
     });
   }
 
