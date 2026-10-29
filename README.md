@@ -92,7 +92,7 @@ In development (the `dev` profile) the API creates an admin account on startup:
 |---|---|---|
 | `admin@clientele.dev` | `admin-password` | Admin |
 
-These credentials are for local development only. You can also create a regular account on the sign-up page. The `dev` profile tops the database up to 50 demo customers when it starts with fewer, so the list has several pages; restarting does not add more. Demo customers use the password `password`.
+These credentials are for local development only. You can also create a regular account on the sign-up page. The `dev` profile tops the database up to 50 demo customers when it starts with fewer, so the list has several pages; restarting does not add more. Demo customers use the password `password`, and their sign-up dates are spread over the past year so the dashboard has a history.
 
 ### Roles
 
@@ -119,12 +119,41 @@ GET /api/v1/customers?page=0&size=20&sort=name,asc&search=ali&gender=FEMALE&minA
 |---|---|---|
 | `page` | 0 or more | `0` |
 | `size` | 1 to 100 | `20` |
-| `sort` | `id`, `name`, `email` or `age`, optionally followed by `,asc` or `,desc` | `id,asc` |
+| `sort` | `id`, `name`, `email`, `age` or `createdAt`, optionally followed by `,asc` or `,desc` | `createdAt,desc` |
 | `search` | matches name or email, ignoring case; at most 100 characters | none |
 | `gender` | `MALE` or `FEMALE` | none |
 | `minAge`, `maxAge` | 16 to 100, inclusive; `minAge` must not be greater than `maxAge` | none |
 
-The response is `{ "content": [...], "page": 0, "size": 20, "totalElements": 132, "totalPages": 7 }`. Invalid parameters return `400` with an `errors` list.
+The response is `{ "content": [...], "page": 0, "size": 20, "totalElements": 132, "totalPages": 7 }`. Invalid parameters return `400` with an `errors` list. Each customer includes `createdAt`, the sign-up time in UTC.
+
+The dashboard reads aggregate statistics, computed in SQL:
+
+```
+GET /api/v1/customers/stats
+```
+
+```json
+{
+  "totalCustomers": 132,
+  "newLast30Days": 14,
+  "averageAge": 37.4,
+  "genderSplit": { "MALE": 70, "FEMALE": 62 },
+  "ageDistribution": [
+    { "range": "16-24", "count": 20 },
+    { "range": "25-34", "count": 41 },
+    { "range": "35-44", "count": 33 },
+    { "range": "45-54", "count": 19 },
+    { "range": "55-64", "count": 12 },
+    { "range": "65+", "count": 7 }
+  ],
+  "signupsByMonth": [
+    { "month": "2025-11", "count": 8 },
+    { "month": "2025-12", "count": 5 }
+  ]
+}
+```
+
+`signupsByMonth` always has 12 entries, the current UTC month and the 11 before it, oldest first (shortened above). `averageAge` is `null` when there are no customers. Every gender, age range and month is present, with `0` when empty.
 
 ## Tests
 
