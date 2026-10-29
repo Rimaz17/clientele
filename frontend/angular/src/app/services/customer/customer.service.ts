@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { CustomerRegistrationRequest } from '../../models/customer-registration-request';
 import { CustomerUpdateRequest } from '../../models/customer-update-request';
 import { AuthenticationResponse } from '../../models/authentication-response';
+import { PageResponse } from '../../models/page-response';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +19,13 @@ export class CustomerService {
     private http: HttpClient
   ) { }
 
+  // The API returns the list in pages. This client has no paging UI, so it shows
+  // the first 100 customers, the largest page the API allows.
   findAll(): Observable<CustomerDTO[]> {
-    return this.http.get<CustomerDTO[]>(this.customerUrl);
+    return this.http.get<PageResponse<CustomerDTO>>(this.customerUrl, { params: { size: 100 } })
+    .pipe(
+      map(page => page.content)
+    );
   }
 
   registerCustomer(customer: CustomerRegistrationRequest): Observable<void> {
