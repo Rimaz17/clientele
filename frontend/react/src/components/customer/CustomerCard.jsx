@@ -54,8 +54,8 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                 <Flex justify={'center'} mt={-12}>
                     <Avatar
                         size={'xl'}
+                        name={name}
                         src={customerProfilePictureUrl(id)}
-                        alt={'Author'}
                         css={{
                             border: '2px solid white',
                         }}
@@ -68,6 +68,10 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                             <Tag borderRadius={"full"}>{id}</Tag>
                             {roles.includes("ROLE_ADMIN") && (
                                 <Badge colorScheme={'purple'} alignSelf={'center'}>Admin</Badge>
+                            )}
+                            {/* Explains why this card, unlike the others, can be changed. */}
+                            {isCurrentCustomer(email) && (
+                                <Badge colorScheme={'teal'} alignSelf={'center'}>You</Badge>
                             )}
                         </Stack>
                         <Heading fontSize={'2xl'} fontWeight={500} fontFamily={'body'}>
@@ -88,15 +92,14 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                         </Stack>
                         <Stack>
                             <Button
-                                bg={'red.400'}
+                                // red.600 keeps the white label above 4.5:1; red.400 was about 3:1.
+                                bg={'red.600'}
                                 color={'white'}
                                 rounded={'full'}
                                 _hover={{
+                                    bg: 'red.700',
                                     transform: 'translateY(-2px)',
                                     boxShadow: 'lg'
-                                }}
-                                _focus={{
-                                    bg: 'green.500'
                                 }}
                                 onClick={onOpen}
                             >

@@ -86,10 +86,17 @@ describe('CustomerCard', () => {
     expect(screen.getByText('Admin')).toBeInTheDocument();
   });
 
-  it('shows no badge for regular users', () => {
+  it("shows no badges on another regular user's card", () => {
     renderCard(jamila, { sub: 'alex@clientele.dev' });
 
     expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText('You')).not.toBeInTheDocument();
+  });
+
+  it("marks the signed-in user's own card", () => {
+    renderCard(jamila, { sub: 'jamila@clientele.dev' });
+
+    expect(screen.getByText('You')).toBeInTheDocument();
   });
 
   it('signs users out after they delete their own account', async () => {
