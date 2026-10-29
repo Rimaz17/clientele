@@ -38,7 +38,8 @@ public class CustomerController {
     public ResponseEntity<?> registerCustomer(
             @Valid @RequestBody CustomerRegistrationRequest request) {
         customerService.addCustomer(request);
-        String jwtToken = jwtUtil.issueToken(request.email(), "ROLE_USER");
+        // Registration always creates a regular user; admins are bootstrapped or promoted.
+        String jwtToken = jwtUtil.issueToken(request.email(), Role.USER.authority());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, jwtToken)
                 .build();
