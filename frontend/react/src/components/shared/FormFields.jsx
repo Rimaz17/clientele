@@ -7,7 +7,8 @@ const FieldControl = ({ label, name, id, isRequired, error, children }) => (
   <FormControl id={id || name} isInvalid={Boolean(error)} isRequired={isRequired}>
     <FormLabel>{label}</FormLabel>
     {children}
-    <FormErrorMessage>{error}</FormErrorMessage>
+    {/* red.600 keeps the small error text above 4.5:1 contrast; Chakra's red.500 is about 4:1. */}
+    <FormErrorMessage color="red.600">{error}</FormErrorMessage>
   </FormControl>
 );
 
