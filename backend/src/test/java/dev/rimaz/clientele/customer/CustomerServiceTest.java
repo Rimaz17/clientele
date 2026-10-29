@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,12 +47,18 @@ class CustomerServiceTest {
     }
 
     @Test
-    void getAllCustomers() {
+    void getCustomersReturnsAPageOfDTOs() {
+        // Given
+        CustomerQuery query = new CustomerQuery(1, 2, "name,asc", "al", null, null, null);
+        Customer customer = new Customer(10, "Alex", "alex@gmail.com", "password", 19, Gender.MALE);
+        when(customerDao.selectCustomers(query)).thenReturn(PageResponse.of(List.of(customer), 1, 2, 3));
+
         // When
-        underTest.getAllCustomers();
+        PageResponse<CustomerDTO> actual = underTest.getCustomers(query);
 
         // Then
-        verify(customerDao).selectAllCustomers();
+        assertThat(actual).isEqualTo(new PageResponse<>(
+                List.of(customerDTOMapper.apply(customer)), 1, 2, 3, 2));
     }
 
     @Test

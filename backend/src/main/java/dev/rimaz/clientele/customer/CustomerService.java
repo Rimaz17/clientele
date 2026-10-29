@@ -14,10 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
@@ -50,11 +48,8 @@ public class CustomerService {
         this.s3Buckets = s3Buckets;
     }
 
-    public List<CustomerDTO> getAllCustomers() {
-        return customerDao.selectAllCustomers()
-                .stream()
-                .map(customerDTOMapper)
-                .collect(Collectors.toList());
+    public PageResponse<CustomerDTO> getCustomers(CustomerQuery query) {
+        return customerDao.selectCustomers(query).map(customerDTOMapper);
     }
 
     public CustomerDTO getCustomer(Integer id) {

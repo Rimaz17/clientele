@@ -9,7 +9,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/customers")
@@ -24,9 +23,11 @@ public class CustomerController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Binds page, size, sort, search, gender, minAge and maxAge from the query
+    // string; invalid values are answered with 400 and field errors.
     @GetMapping
-    public List<CustomerDTO> getCustomers() {
-        return customerService.getAllCustomers();
+    public PageResponse<CustomerDTO> getCustomers(@Valid CustomerQuery query) {
+        return customerService.getCustomers(query);
     }
 
     @GetMapping("{customerId}")

@@ -25,17 +25,6 @@ public class CustomerJDBCDataAccessService implements CustomerDao {
     }
 
     @Override
-    public List<Customer> selectAllCustomers() {
-        var sql = """
-                SELECT id, name, email, password, age, gender, profile_image_id, role
-                FROM customer
-                LIMIT 1000
-                """;
-
-        return jdbcTemplate.query(sql, customerRowMapper);
-    }
-
-    @Override
     public PageResponse<Customer> selectCustomers(CustomerQuery query) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         String where = whereClause(query, parameters);

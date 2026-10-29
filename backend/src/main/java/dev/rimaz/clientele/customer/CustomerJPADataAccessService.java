@@ -2,11 +2,9 @@ package dev.rimaz.clientele.customer;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository("jpa")
@@ -16,12 +14,6 @@ public class CustomerJPADataAccessService implements CustomerDao {
 
     public CustomerJPADataAccessService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
-    }
-
-    @Override
-    public List<Customer> selectAllCustomers() {
-        Page<Customer> page = customerRepository.findAll(Pageable.ofSize(1000));
-        return page.getContent();
     }
 
     @Override

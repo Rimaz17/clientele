@@ -4,7 +4,6 @@ import dev.rimaz.clientele.AbstractTestcontainers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,23 +23,6 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
     }
 
     @Test
-    void selectAllCustomers() {
-        // Given
-        Customer customer = new Customer(
-                FAKER.name().fullName(),
-                FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID(),
-                "password", 20,
-                Gender.MALE);
-        underTest.insertCustomer(customer);
-
-        // When
-        List<Customer> actual = underTest.selectAllCustomers();
-
-        // Then
-        assertThat(actual).isNotEmpty();
-    }
-
-    @Test
     void selectCustomerById() {
         // Given
         String email = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();
@@ -52,11 +34,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When
@@ -127,11 +106,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When
@@ -165,11 +141,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When
@@ -192,11 +165,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         var newName = "foo";
@@ -231,11 +201,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         var newEmail = FAKER.internet().safeEmailAddress() + "-" + UUID.randomUUID();;
@@ -270,11 +237,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         var newAge = 100;
@@ -309,11 +273,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When update with new name, age and email
@@ -350,11 +311,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When update without no changes
@@ -386,11 +344,8 @@ class CustomerJDBCDataAccessServiceTest extends AbstractTestcontainers {
 
         underTest.insertCustomer(customer);
 
-        int id = underTest.selectAllCustomers()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
+        int id = underTest.selectUserByEmail(email)
                 .map(Customer::getId)
-                .findFirst()
                 .orElseThrow();
 
         // When
