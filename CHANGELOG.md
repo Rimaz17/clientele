@@ -24,5 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The unused in-memory customer DAO.
 
 ### Fixed
+- Registering or updating with an email that is already taken returns `409 Conflict` instead of `500`.
+- An update that changes nothing returns `400 Bad Request` instead of `500`.
+- Malformed JSON, a non-numeric customer id and a missing upload part return `400`; an unsupported method returns `405`, an unsupported content type `415`, and an oversized upload `413`.
+- Unexpected errors return `500` with a generic message and no internal details; the full error is logged on the server.
+- An invalid or expired bearer token returns the usual `403` error body without a server-side stack trace.
+- The Angular app shows the API error message when registering, saving, updating or deleting a customer fails.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
