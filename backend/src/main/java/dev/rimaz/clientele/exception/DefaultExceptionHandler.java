@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @ControllerAdvice
 public class DefaultExceptionHandler {
@@ -123,11 +124,19 @@ public class DefaultExceptionHandler {
     private ResponseEntity<ApiError> buildResponse(HttpStatus status,
                                                    String message,
                                                    HttpServletRequest request) {
+        return buildResponse(status, message, request, List.of());
+    }
+
+    private ResponseEntity<ApiError> buildResponse(HttpStatus status,
+                                                   String message,
+                                                   HttpServletRequest request,
+                                                   List<ApiFieldError> errors) {
         ApiError apiError = new ApiError(
                 request.getRequestURI(),
                 message,
                 status.value(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                errors
         );
         return new ResponseEntity<>(apiError, status);
     }

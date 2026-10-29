@@ -164,5 +164,6 @@ class DefaultExceptionHandlerTest {
         assertThat(body.message()).isEqualTo(expectedMessage);
         assertThat(body.path()).isEqualTo(PATH);
         assertThat(body.localDateTime()).isNotNull();
+        assertThat(body.errors()).isEmpty();
     }
 }
