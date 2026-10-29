@@ -22,11 +22,13 @@ import {errorNotification, successNotification} from "../../services/notificatio
 import {getChangeErrorMessage} from "../../services/apiErrors.js";
 import UpdateCustomerDrawer from "./UpdateCustomerDrawer.jsx";
 import {useAuth} from "../context/AuthContext.jsx";
+import {useNavigate} from "react-router-dom";
 
 export default function CardWithImage({id, name, email, age, gender, roles = [], fetchCustomers}) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const cancelRef = useRef()
-    const { isAdmin, isCurrentCustomer } = useAuth()
+    const { isAdmin, isCurrentCustomer, logOut } = useAuth()
+    const navigate = useNavigate()
     // The API enforces the same rule; hiding the controls only avoids dead ends.
     const canModify = isAdmin || isCurrentCustomer(email)
 
@@ -126,6 +128,12 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                                                         'Customer deleted',
                                                         `${name} was successfully deleted`
                                                     )
+                                                    // The token of a deleted account no longer works.
+                                                    if (isCurrentCustomer(email)) {
+                                                        logOut()
+                                                        navigate("/")
+                                                        return
+                                                    }
                                                     fetchCustomers();
 
                                                 }).catch(err => {
