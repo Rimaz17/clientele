@@ -24,7 +24,8 @@ const StatCard = ({ label, value, detail, isLoading = false }) => (
             {value}
           </StatNumber>
         </Skeleton>
-        <StatHelpText mb={0} mt={1} color="gray.600">
+        {/* Chakra dims help text to 80%, which leaves gray.600 at the edge of AA. */}
+        <StatHelpText mb={0} mt={1} color="gray.600" opacity={1}>
           {isLoading ? ' ' : detail}
         </StatHelpText>
       </Stat>
