@@ -12,6 +12,17 @@ const theme = extendTheme({
       axis: '#4a5568',
     },
   },
+  components: {
+    // Chakra 2.4's Card takes its background from a token that does not
+    // resolve, which leaves cards transparent on the grey page.
+    Card: {
+      baseStyle: {
+        container: {
+          bg: 'white',
+        },
+      },
+    },
+  },
 });
 
 export default theme;
