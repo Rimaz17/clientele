@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -104,6 +105,14 @@ class DefaultExceptionHandlerTest {
                 new InsufficientAuthenticationException("Full authentication is required"), request);
 
         assertApiError(response, HttpStatus.FORBIDDEN, "Full authentication is required");
+    }
+
+    @Test
+    void accessDeniedReturns403() {
+        ResponseEntity<ApiError> response = underTest.handleException(
+                new AccessDeniedException("Access is denied"), request);
+
+        assertApiError(response, HttpStatus.FORBIDDEN, "Access denied");
     }
 
     @Test

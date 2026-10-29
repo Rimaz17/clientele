@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -74,6 +75,12 @@ public class DefaultExceptionHandler {
     public ResponseEntity<ApiError> handleException(InsufficientAuthenticationException e,
                                                     HttpServletRequest request) {
         return buildResponse(HttpStatus.FORBIDDEN, e.getMessage(), request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleException(AccessDeniedException e,
+                                                    HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Access denied", request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
