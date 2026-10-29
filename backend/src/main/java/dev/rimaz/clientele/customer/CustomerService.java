@@ -7,17 +7,25 @@ import dev.rimaz.clientele.s3.S3Buckets;
 import dev.rimaz.clientele.s3.S3Service;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
+
+    private static final Set<String> ALLOWED_PROFILE_IMAGE_TYPES = Set.of(
+            MediaType.IMAGE_JPEG_VALUE,
+            MediaType.IMAGE_PNG_VALUE,
+            "image/webp"
+    );
 
     private final CustomerDao customerDao;
     private final CustomerDTOMapper customerDTOMapper;
@@ -125,6 +133,7 @@ public class CustomerService {
     public void uploadCustomerProfileImage(Integer customerId,
                                            MultipartFile file) {
         checkIfCustomerExistsOrThrow(customerId);
+        validateProfileImage(file);
         String profileImageId = UUID.randomUUID().toString();
         try {
             s3Service.putObject(
@@ -136,6 +145,20 @@ public class CustomerService {
             throw new RuntimeException("failed to upload profile image", e);
         }
         customerDao.updateCustomerProfileImageId(profileImageId, customerId);
+    }
+
+    // The content type is declared by the client, so this is a sanity check
+    // against mistakes rather than proof that the bytes are an image.
+    private void validateProfileImage(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new RequestValidationException("profile image file is empty");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_PROFILE_IMAGE_TYPES.contains(contentType)) {
+            throw new RequestValidationException(
+                    "profile image must be a JPEG, PNG or WebP file"
+            );
+        }
     }
 
     public byte[] getCustomerProfileImage(Integer customerId) {

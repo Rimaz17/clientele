@@ -8,9 +8,13 @@ import dev.rimaz.clientele.s3.S3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
@@ -296,7 +300,8 @@ class CustomerServiceTest {
 
         byte[] bytes = "Hello World".getBytes();
 
-        MultipartFile multipartFile = new MockMultipartFile("file", bytes);
+        MultipartFile multipartFile = new MockMultipartFile(
+                "file", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE, bytes);
 
         String bucket = "customer-bucket";
         when(s3Buckets.getCustomer()).thenReturn(bucket);
@@ -334,6 +339,44 @@ class CustomerServiceTest {
     }
 
     @Test
+    void cannotUploadEmptyProfileImage() {
+        // Given
+        int customerId = 10;
+        when(customerDao.existsCustomerById(customerId)).thenReturn(true);
+        MultipartFile emptyFile = new MockMultipartFile(
+                "file", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]);
+
+        // When
+        assertThatThrownBy(() -> underTest.uploadCustomerProfileImage(customerId, emptyFile))
+                .isInstanceOf(RequestValidationException.class)
+                .hasMessage("profile image file is empty");
+
+        // Then
+        verifyNoInteractions(s3Service);
+        verify(customerDao, never()).updateCustomerProfileImageId(any(), any());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"image/gif", "application/pdf", "text/plain"})
+    void cannotUploadProfileImageWithUnsupportedContentType(String contentType) {
+        // Given
+        int customerId = 10;
+        when(customerDao.existsCustomerById(customerId)).thenReturn(true);
+        MultipartFile file = new MockMultipartFile(
+                "file", "avatar", contentType, "Hello World".getBytes());
+
+        // When
+        assertThatThrownBy(() -> underTest.uploadCustomerProfileImage(customerId, file))
+                .isInstanceOf(RequestValidationException.class)
+                .hasMessage("profile image must be a JPEG, PNG or WebP file");
+
+        // Then
+        verifyNoInteractions(s3Service);
+        verify(customerDao, never()).updateCustomerProfileImageId(any(), any());
+    }
+
+    @Test
     void cannotUploadProfileImageWhenExceptionIsThrown() throws IOException {
         // Given
         int customerId = 10;
@@ -341,6 +384,7 @@ class CustomerServiceTest {
         when(customerDao.existsCustomerById(customerId)).thenReturn(true);
 
         MultipartFile multipartFile = mock(MultipartFile.class);
+        when(multipartFile.getContentType()).thenReturn(MediaType.IMAGE_PNG_VALUE);
         when(multipartFile.getBytes()).thenThrow(IOException.class);
 
         String bucket = "customer-bucket";
