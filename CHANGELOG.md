@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Server-side validation of registration, update and login requests. Invalid input returns `400` with an `errors` list of `{ field, message }` entries in the `ApiError` body.
 - Profile picture uploads must be non-empty JPEG, PNG or WebP files.
 - The React customer forms show server-side field errors under the matching inputs.
+- Customer roles: every account is a `USER` or an `ADMIN`, stored in a new `role` column (migration `V3`) and carried in the JWT `scopes` claim.
+- Admin bootstrap: when `CLIENTELE_BOOTSTRAP_ADMIN_EMAIL` and `CLIENTELE_BOOTSTRAP_ADMIN_PASSWORD` are set, startup creates that admin or promotes the existing account. The `dev` profile includes a development-only admin (`admin@clientele.dev`).
+- When users change their own email, the update response carries a new token, and both frontends store it so the user stays signed in.
+- The React customer cards mark admins and the signed-in user's own card, and the header shows the role as Admin or User.
 
 ### Changed
 - Backend CI runs on every pull request to `main`, with Maven caching and least-privilege permissions.
@@ -22,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maven artifact, Docker images and compose services are renamed to `clientele`.
 - The React `.env` file is no longer tracked; copy `frontend/react/.env.example` instead.
 - The backend base package is now `dev.rimaz.clientele` and the Maven `groupId` is `dev.rimaz`.
+- Demo customers are seeded only in the `dev` profile (`clientele.seed.enabled`), and only until a fixed number exists, instead of one new random customer on every start in every profile.
+- The React app shows Update and Delete only on the signed-in user's own card, or on every card for admins, and signs users out after they delete their own account.
+- A `403` on a change now says the user can only change their own account, in both frontends.
 
 ### Removed
 - The unused in-memory customer DAO.
@@ -43,4 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - The JWT signing secret is no longer hard-coded. It is read from `clientele.jwt.secret` (environment variable `CLIENTELE_JWT_SECRET`); the `dev` profile, now the default, supplies a development-only secret. Any other profile refuses to start without a secret of at least 32 bytes. The previous secret is in Git history and is treated as compromised, so existing tokens stop working and users must log in again.
+- Only admins and the customer themselves can update or delete a customer or upload their profile picture; anyone else gets `403`. Reading customers stays open to every signed-in user.
+- Sign-up always creates a regular user; a `role` field in the request body is ignored.
+- A token whose user no longer exists, for example after an email change or a deletion, is rejected with `403`.
 - The JWT issuer and lifetime are configurable (`clientele.jwt.issuer`, default `clientele`; `clientele.jwt.expiration`, default `15d`), and tokens from another issuer are rejected.
