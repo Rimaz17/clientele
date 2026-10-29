@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - An invalid or expired bearer token returns the usual `403` error body without a server-side stack trace.
 - The React sign-up and customer forms show a correct message for an invalid email, and the age message no longer says 100 is too old.
 - React form labels are linked to their inputs, and error toasts still appear when the API is unreachable.
+- React form errors are announced by screen readers (linked to their input with `aria-invalid` and `aria-describedby`), required fields are marked, and error text meets WCAG AA contrast.
+- A taken email is shown under the email field, and error toasts have readable titles instead of HTTP client codes.
+- The profile picture dropzone has an accessible name and focus ring, lists the accepted types and the 10 MB limit, and explains rejected files; a customer without a picture shows their initials.
 - The Angular app shows the API error message when registering, saving, updating or deleting a customer fails.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
