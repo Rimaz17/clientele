@@ -3,6 +3,7 @@ package dev.rimaz.clientele.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -29,6 +30,13 @@ public class DefaultExceptionHandler {
     public ResponseEntity<ApiError> handleException(RequestValidationException e,
                                                     HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
+    }
+
+    // The parser's own message names internal classes, so a fixed message is returned instead.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleException(HttpMessageNotReadableException e,
+                                                    HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Malformed or unreadable request body", request);
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)

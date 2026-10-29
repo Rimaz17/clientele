@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -45,6 +47,17 @@ class DefaultExceptionHandlerTest {
                 new RequestValidationException("no data changes found"), request);
 
         assertApiError(response, HttpStatus.BAD_REQUEST, "no data changes found");
+    }
+
+    @Test
+    void unreadableBodyReturns400WithoutParserDetails() {
+        HttpMessageNotReadableException exception = new HttpMessageNotReadableException(
+                "JSON parse error: Unexpected character ('}' (code 125))",
+                new MockHttpInputMessage(new byte[0]));
+
+        ResponseEntity<ApiError> response = underTest.handleException(exception, request);
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "Malformed or unreadable request body");
     }
 
     @Test
