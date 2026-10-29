@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import {Alert, AlertIcon, Box, Button, FormLabel, Image, Input, Stack, VStack} from "@chakra-ui/react";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
+import {getApiErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
 import {useCallback} from "react";
 import {useDropzone} from "react-dropzone";
 
@@ -92,7 +93,7 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                         .max(100, 'Must be 100 years of age or younger')
                         .required(),
                 })}
-                onSubmit={(updatedCustomer, {setSubmitting}) => {
+                onSubmit={(updatedCustomer, {setSubmitting, setErrors}) => {
                     setSubmitting(true);
                     updateCustomer(customerId, updatedCustomer)
                         .then(res => {
@@ -104,9 +105,10 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
                             fetchCustomers();
                         }).catch(err => {
                         console.log(err);
+                        setErrors(getFieldErrors(err));
                         errorNotification(
                             err.code,
-                            err.response.data.message
+                            getApiErrorMessage(err)
                         )
                     }).finally(() => {
                         setSubmitting(false);
