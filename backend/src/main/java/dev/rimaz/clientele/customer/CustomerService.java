@@ -104,11 +104,12 @@ public class CustomerService {
     }
 
     /**
-     * Applies a partial update. Only admins and the customer themselves may do
-     * this; anyone else gets an {@link org.springframework.security.access.AccessDeniedException}.
+     * Applies a partial update and returns the updated customer. Only admins and
+     * the customer themselves may do this; anyone else gets an
+     * {@link org.springframework.security.access.AccessDeniedException}.
      */
     @PreAuthorize(ADMIN_OR_SELF)
-    public void updateCustomer(Integer customerId,
+    public CustomerDTO updateCustomer(Integer customerId,
                                CustomerUpdateRequest updateRequest) {
         // TODO: for JPA use .getReferenceById(customerId) as it does does not bring object into memory and instead a reference
         Customer customer = customerDao.selectCustomerById(customerId)
@@ -143,6 +144,7 @@ public class CustomerService {
         }
 
         customerDao.updateCustomer(customer);
+        return customerDTOMapper.apply(customer);
     }
 
     /**

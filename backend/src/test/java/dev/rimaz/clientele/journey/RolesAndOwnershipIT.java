@@ -107,7 +107,10 @@ class RolesAndOwnershipIT {
     void usersCanUpdateThemselves() {
         updateCustomer(alice.id(), alice.bearerToken(), new CustomerUpdateRequest("Alicia", null, 41))
                 .expectStatus()
-                .isOk();
+                .isOk()
+                // The email did not change, so the current token stays valid.
+                .expectHeader()
+                .doesNotExist(AUTHORIZATION);
 
         CustomerDTO updated = getCustomer(alice.id(), alice.bearerToken());
         assertThat(updated.name()).isEqualTo("Alicia");
@@ -117,16 +120,51 @@ class RolesAndOwnershipIT {
     @Test
     void adminsCanUpdateAnyone() {
         String adminToken = login(adminEmail, adminPassword).bearerToken();
+        String newEmail = uniqueEmail();
 
-        updateCustomer(bob.id(), adminToken, new CustomerUpdateRequest("Robert", null, null))
+        updateCustomer(bob.id(), adminToken, new CustomerUpdateRequest("Robert", newEmail, null))
                 .expectStatus()
                 .isOk()
                 // Only users who change their own email get a new token.
                 .expectHeader()
                 .doesNotExist(AUTHORIZATION);
 
-        assertThat(getCustomer(bob.id(), bob.bearerToken()).name()).isEqualTo("Robert");
+        CustomerDTO updated = getCustomer(bob.id(), adminToken);
+        assertThat(updated.name()).isEqualTo("Robert");
+        assertThat(updated.email()).isEqualTo(newEmail);
     }
+
+    @Test
+    void usersWhoChangeTheirOwnEmailGetAWorkingNewToken() {
+        String newEmail = uniqueEmail();
+
+        CustomerUpdateRequest emailChange = new CustomerUpdateRequest(null, newEmail, null);
+
+        String newToken = updateCustomer(alice.id(), alice.bearerToken(), emailChange)
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .exists(AUTHORIZATION)
+                .returnResult(Void.class)
+                .getResponseHeaders()
+                .getFirst(AUTHORIZATION);
+        String newBearerToken = "Bearer " + newToken;
+
+        // The old token names an email that no longer exists.
+        webTestClient.get()
+                .uri(CUSTOMER_PATH + "/{id}", alice.id())
+                .header(AUTHORIZATION, alice.bearerToken())
+                .exchange()
+                .expectStatus()
+                .isForbidden();
+
+        assertThat(getCustomer(alice.id(), newBearerToken).email()).isEqualTo(newEmail);
+        updateCustomer(alice.id(), newBearerToken, new CustomerUpdateRequest("Alicia", null, null))
+                .expectStatus()
+                .isOk();
+        assertThat(login(newEmail, PASSWORD).response().customerDTO().name()).isEqualTo("Alicia");
+    }
+
 
     @Test
     void adminsCanDeleteAnyone() {

@@ -170,7 +170,7 @@ class CustomerServiceTest {
         when(customerDao.existsCustomerWithEmail(newEmail)).thenReturn(false);
 
         // When
-        underTest.updateCustomer(id, updateRequest);
+        CustomerDTO updated = underTest.updateCustomer(id, updateRequest);
 
         // Then
         ArgumentCaptor<Customer> customerArgumentCaptor = ArgumentCaptor.forClass(Customer.class);
@@ -181,6 +181,7 @@ class CustomerServiceTest {
         assertThat(capturedCustomer.getName()).isEqualTo(updateRequest.name());
         assertThat(capturedCustomer.getEmail()).isEqualTo(updateRequest.email());
         assertThat(capturedCustomer.getAge()).isEqualTo(updateRequest.age());
+        assertThat(updated).isEqualTo(customerDTOMapper.apply(capturedCustomer));
     }
 
     @Test
