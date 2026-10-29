@@ -8,6 +8,7 @@ import dev.rimaz.clientele.s3.S3Service;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +27,10 @@ public class CustomerService {
             MediaType.IMAGE_PNG_VALUE,
             "image/webp"
     );
+
+    // Admins may change any customer; everyone else only their own account.
+    private static final String ADMIN_OR_SELF =
+            "hasRole('ADMIN') or @customerAccess.isSelf(#customerId, authentication)";
 
     private final CustomerDao customerDao;
     private final CustomerDTOMapper customerDTOMapper;
@@ -80,6 +85,11 @@ public class CustomerService {
         customerDao.insertCustomer(customer);
     }
 
+    /**
+     * Deletes a customer. Only admins and the customer themselves may do this;
+     * anyone else gets an {@link org.springframework.security.access.AccessDeniedException}.
+     */
+    @PreAuthorize(ADMIN_OR_SELF)
     public void deleteCustomerById(Integer customerId) {
         checkIfCustomerExistsOrThrow(customerId);
         customerDao.deleteCustomerById(customerId);
@@ -93,6 +103,11 @@ public class CustomerService {
         }
     }
 
+    /**
+     * Applies a partial update. Only admins and the customer themselves may do
+     * this; anyone else gets an {@link org.springframework.security.access.AccessDeniedException}.
+     */
+    @PreAuthorize(ADMIN_OR_SELF)
     public void updateCustomer(Integer customerId,
                                CustomerUpdateRequest updateRequest) {
         // TODO: for JPA use .getReferenceById(customerId) as it does does not bring object into memory and instead a reference
@@ -130,6 +145,11 @@ public class CustomerService {
         customerDao.updateCustomer(customer);
     }
 
+    /**
+     * Stores a new profile image. Only admins and the customer themselves may do
+     * this; anyone else gets an {@link org.springframework.security.access.AccessDeniedException}.
+     */
+    @PreAuthorize(ADMIN_OR_SELF)
     public void uploadCustomerProfileImage(Integer customerId,
                                            MultipartFile file) {
         checkIfCustomerExistsOrThrow(customerId);
