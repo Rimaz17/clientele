@@ -125,6 +125,21 @@ class ApiDocsIT {
     }
 
     @Test
+    void describesTheResponseBodiesWithExamples() throws Exception {
+        JsonNode schemas = apiDocs().path("components").path("schemas");
+
+        assertThat(schemas.at("/CustomerDTO/properties/createdAt/format").asText()).isEqualTo("date-time");
+        assertThat(schemas.at("/CustomerDTO/properties/email/example").asText()).isEqualTo("alex.smith@example.com");
+        assertThat(schemas.at("/CustomerDTO/properties").has("password")).isFalse();
+        assertThat(schemas.at("/ApiError/properties/message/example").asText()).isEqualTo("Request validation failed");
+        assertThat(schemas.at("/ApiFieldError/properties/field/example").asText()).isEqualTo("email");
+        assertThat(schemas.at("/PageResponseCustomerDTO/properties/totalElements/example").asInt()).isEqualTo(132);
+        assertThat(schemas.at("/CustomerStats/properties/genderSplit/example/MALE").asInt()).isEqualTo(70);
+        assertThat(schemas.at("/MonthlySignups/properties/month/example").asText()).isEqualTo("2026-03");
+        assertThat(schemas.at("/AuthenticationResponse/properties/token/description").asText()).isNotBlank();
+    }
+
+    @Test
     void marksThePublicEndpointsAsNotNeedingAToken() {
         webTestClient.get()
                 .uri("/v3/api-docs")
