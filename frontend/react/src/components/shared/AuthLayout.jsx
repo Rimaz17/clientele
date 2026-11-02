@@ -49,7 +49,7 @@ const AuthLayout = ({ title, children, footer }) => (
     <Flex as="main" p={8} flex={1} alignItems="center" justifyContent="center">
       <Stack spacing={4} w="full" maxW="md">
         <Logo size={40} mb={6} />
-        <Heading fontSize="2xl" mb={15}>
+        <Heading as="h1" fontSize="2xl" mb={15}>
           {title}
         </Heading>
         {children}

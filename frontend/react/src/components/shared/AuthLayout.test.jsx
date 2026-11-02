@@ -20,7 +20,7 @@ describe('AuthLayout', () => {
     const main = screen.getByRole('main');
     expect(within(main).getByText('Clientele')).toBeInTheDocument();
     expect(
-      within(main).getByRole('heading', { name: 'Sign in to your account' }),
+      within(main).getByRole('heading', { level: 1, name: 'Sign in to your account' }),
     ).toBeInTheDocument();
     expect(within(main).getByRole('form', { name: 'Sign in' })).toBeInTheDocument();
     expect(within(main).getByRole('link', { name: 'Sign up' })).toBeInTheDocument();
