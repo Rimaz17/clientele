@@ -78,7 +78,7 @@ const CreateCustomerForm = ({ onSuccess }) => {
                                 label="Email Address"
                                 name="email"
                                 type="email"
-                                placeholder="jane@formik.com"
+                                placeholder="jane@example.com"
                             />
 
                             <TextField

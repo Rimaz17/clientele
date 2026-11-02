@@ -54,7 +54,7 @@ const LoginForm = () => {
                             label={"Email"}
                             name={"username"}
                             type={"email"}
-                            placeholder={"hello@amigoscode.com"}
+                            placeholder={"you@example.com"}
                         />
                         <TextField
                             isRequired

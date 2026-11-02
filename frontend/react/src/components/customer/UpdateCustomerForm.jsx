@@ -169,7 +169,7 @@ const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId, profileI
                                 label="Email Address"
                                 name="email"
                                 type="email"
-                                placeholder="jane@formik.com"
+                                placeholder="jane@example.com"
                             />
 
                             <TextField
