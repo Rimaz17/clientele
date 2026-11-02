@@ -63,7 +63,9 @@ export const uploadCustomerProfilePicture = async (id, formData) =>
 // Every upload gets a new profileImageId. Putting it in the URL gives each
 // picture its own address, so a new upload is fetched instead of the browser
 // reusing the image it already has for the old one. The API ignores `v`.
-export const customerProfilePictureUrl = (id, profileImageId) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL}/api/v1/customers/${id}/profile-image`;
-    return profileImageId ? `${url}?v=${encodeURIComponent(profileImageId)}` : url;
-};
+// Without a picture there is nothing to fetch, so there is no URL and the
+// avatar shows the customer's initials without a request that would 404.
+export const customerProfilePictureUrl = (id, profileImageId) =>
+    profileImageId
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/customers/${id}/profile-image?v=${encodeURIComponent(profileImageId)}`
+        : undefined;

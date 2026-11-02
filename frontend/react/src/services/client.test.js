@@ -15,7 +15,8 @@ describe('customerProfilePictureUrl', () => {
     expect(customerProfilePictureUrl(7, 'a b&c')).toBe(`${base}?v=a%20b%26c`);
   });
 
-  it('returns the plain URL without a picture id', () => {
-    expect(customerProfilePictureUrl(7)).toBe(base);
+  it('returns no URL for a customer without a picture', () => {
+    expect(customerProfilePictureUrl(7, null)).toBeUndefined();
+    expect(customerProfilePictureUrl(7)).toBeUndefined();
   });
 });
