@@ -105,28 +105,9 @@ These accounts exist only in the local `dev` profile and are never valid anywher
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    subgraph Clients
-        React["React app<br/>Chakra UI, Recharts"]
-        Angular["Angular app<br/>PrimeNG"]
-    end
-
-    subgraph API["Spring Boot API"]
-        Filter["JWT filter<br/>Spring Security"]
-        Controllers["Controllers<br/>HTTP and validation"]
-        Services["Services<br/>business rules and @PreAuthorize"]
-        DAO["DAOs<br/>JDBC and JPA"]
-    end
-
-    DB[("PostgreSQL<br/>Flyway migrations")]
-    S3[("Amazon S3<br/>or local disk")]
-
-    React -- "JSON + Bearer JWT" --> Filter
-    Angular -- "JSON + Bearer JWT" --> Filter
-    Filter --> Controllers --> Services --> DAO --> DB
-    Services -- "profile pictures" --> S3
-```
+<p align="center">
+  <img src="docs/architecture.png" width="640" alt="Clientele architecture: React and Angular frontends call the Spring Boot API over JWT-secured REST; the API stores data in PostgreSQL with Flyway and profile pictures in Amazon S3, with testing and CI/CD layers below">
+</p>
 
 The API is organised by feature and layered strictly: controllers handle HTTP, services own business rules and authorization, and DAOs own SQL. The [architecture overview](docs/architecture.md) has the authentication and dashboard sequence diagrams.
 
