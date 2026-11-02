@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import Customer from './Customer.jsx'
 import {Center, ChakraProvider, Spinner} from '@chakra-ui/react'
-import { createStandaloneToast } from '@chakra-ui/toast'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./components/login/Login.jsx";
 import Signup from "./components/signup/Signup";
@@ -20,8 +19,6 @@ const PageSpinner = () => (
         <Spinner size="xl" color="blue.500" label="Loading page" />
     </Center>
 );
-
-const { ToastContainer } = createStandaloneToast();
 
 const router = createBrowserRouter([
     {
@@ -50,7 +47,6 @@ ReactDOM
                 <AuthProvider>
                     <RouterProvider router={router} />
                 </AuthProvider>
-                <ToastContainer />
             </ChakraProvider>
         </React.StrictMode>,
     )
