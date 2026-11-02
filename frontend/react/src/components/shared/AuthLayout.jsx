@@ -9,8 +9,8 @@ const HIGHLIGHTS = [
   { icon: FiBarChart2, text: 'A dashboard built from the live records' },
 ];
 
-// The blue panel beside the form. Hidden on small screens, where the logo
-// above the form is enough branding.
+// The blue panel beside the form, and the only logo from md up. Hidden on
+// small screens, where the logo sits above the form instead.
 const BrandPanel = () => (
   <Flex
     as="aside"
@@ -41,14 +41,16 @@ const BrandPanel = () => (
 );
 
 /**
- * Page frame for signing in and signing up: the logo, a heading and the form
- * on the left, and the brand panel on the right from the md breakpoint up.
+ * Page frame for signing in and signing up: a heading and the form on the
+ * left, and the brand panel on the right from the md breakpoint up. Below md
+ * the panel is hidden, so the logo moves above the heading instead; the page
+ * never shows the logo twice.
  */
 const AuthLayout = ({ title, children, footer }) => (
   <Stack minH="100vh" direction={{ base: 'column', md: 'row' }} spacing={0}>
     <Flex as="main" p={8} flex={1} alignItems="center" justifyContent="center">
       <Stack spacing={4} w="full" maxW="md">
-        <Logo size={40} mb={6} />
+        <Logo size={40} mb={6} display={{ base: 'flex', md: 'none' }} />
         <Heading as="h1" fontSize="2xl" mb={15}>
           {title}
         </Heading>
