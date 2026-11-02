@@ -5,7 +5,7 @@ import {TextField} from "../shared/FormFields.jsx";
 import {customerProfilePictureUrl, updateCustomer, uploadCustomerProfilePicture} from "../../services/client.js";
 import {errorNotification, successNotification} from "../../services/notification.js";
 import {getChangeErrorMessage, getFieldErrors} from "../../services/apiErrors.js";
-import {useCallback} from "react";
+import {useCallback, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import {useAuth} from "../context/AuthContext.jsx";
 
@@ -29,6 +29,7 @@ const rejectionMessage = (fileRejections) => {
 }
 
 const MyDropzone = ({ customerId, fetchCustomers }) => {
+    const [isUploading, setUploading] = useState(false)
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
         if (acceptedFiles.length === 0) {
             errorNotification("Upload failed", rejectionMessage(fileRejections))
@@ -37,6 +38,7 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
         const formData = new FormData();
         formData.append("file", acceptedFiles[0])
 
+        setUploading(true)
         uploadCustomerProfilePicture(
             customerId,
             formData
@@ -45,14 +47,25 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
             fetchCustomers()
         }).catch(err => {
             errorNotification("Upload failed", getChangeErrorMessage(err, "The profile picture could not be uploaded"))
+        }).finally(() => {
+            setUploading(false)
         })
     }, [customerId, fetchCustomers])
+    // Disabled while uploading, so a second drop cannot race the first.
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
         onDrop,
         accept: ACCEPTED_IMAGE_TYPES,
         maxSize: MAX_IMAGE_SIZE,
-        maxFiles: 1
+        maxFiles: 1,
+        disabled: isUploading
     })
+
+    const status = () => {
+        if (isUploading) {
+            return "Uploading the picture…"
+        }
+        return isDragActive ? "Drop the picture here" : "Drag a picture here, or click to choose one"
+    }
 
     return (
         <Box {...getRootProps({role: "button", "aria-label": "Upload a new profile picture"})}
@@ -63,11 +76,13 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
              borderRadius={'3xl'}
              p={6}
              rounded={'md'}
-             cursor={'pointer'}
+             cursor={isUploading ? 'progress' : 'pointer'}
+             opacity={isUploading ? 0.7 : 1}
+             aria-busy={isUploading}
              _focusVisible={{boxShadow: 'outline', outline: 'none'}}>
             <input {...getInputProps()} />
-            <Text>
-                {isDragActive ? "Drop the picture here" : "Drag a picture here, or click to choose one"}
+            <Text aria-live={'polite'}>
+                {status()}
             </Text>
             <Text fontSize={'sm'} color={'gray.600'} mt={1}>
                 JPEG, PNG or WebP, up to 10 MB

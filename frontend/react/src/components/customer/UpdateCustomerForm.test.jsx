@@ -126,4 +126,28 @@ describe('UpdateCustomerForm', () => {
 
     expect(customerProfilePictureUrl).toHaveBeenLastCalledWith(1, 'new-picture');
   });
+
+  it('says the picture is uploading until the upload finishes', async () => {
+    let finishUpload;
+    uploadCustomerProfilePicture.mockReturnValue(
+      new Promise((resolve) => (finishUpload = resolve)),
+    );
+    const user = userEvent.setup();
+    const { container } = renderForm();
+    const picture = new File(['picture'], 'alex.png', { type: 'image/png' });
+
+    await user.upload(container.querySelector('input[type="file"]'), picture);
+
+    expect(await screen.findByText('Uploading the picture…')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upload a new profile picture' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+
+    finishUpload({});
+
+    expect(
+      await screen.findByText('Drag a picture here, or click to choose one'),
+    ).toBeInTheDocument();
+  });
 });
