@@ -4,13 +4,18 @@ on:
   pull_request:
     branches:
       - main
+  # Also runs after every merge, so the README status badges show the state of main.
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
   group: backend-ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Only superseded pull request runs are cancelled; every run on main finishes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:

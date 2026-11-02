@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-02
+
 ### Added
+- A README with screenshots, a five-minute quick start, demo accounts, the security model, environment variables and links to the design decisions.
 - ESLint, Prettier, Vitest and React Testing Library for the React app, with a Login smoke test.
 - Frontend CI workflow that lints, tests and builds the React app and builds the Angular app.
 - `.env.example` files documenting the environment variables, plus `.editorconfig` and `.gitattributes`.
@@ -33,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `dev` profile keeps 50 demo customers, so the list has several pages.
 - Backend CI runs on every pull request to `main`, with Maven caching and least-privilege permissions.
 - Backend deployment runs only when triggered manually.
+- Backend and frontend CI also run on every push to `main`, so the README status badges show the state of `main`.
 - Maven artifact, Docker images and compose services are renamed to `clientele`.
 - The React `.env` file is no longer tracked; copy `frontend/react/.env.example` instead.
 - The API's `.env.example` moved from the repository root to `backend/.env.example`, next to the code that reads it. For docker compose, still copy it to `.env` in the repository root.
@@ -82,3 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sign-up always creates a regular user; a `role` field in the request body is ignored.
 - A token whose user no longer exists, for example after an email change or a deletion, is rejected with `403`.
 - The JWT issuer and lifetime are configurable (`clientele.jwt.issuer`, default `clientele`; `clientele.jwt.expiration`, default `15d`), and tokens from another issuer are rejected.
+
+[Unreleased]: https://github.com/Rimaz17/clientele/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Rimaz17/clientele/releases/tag/v1.0.0
