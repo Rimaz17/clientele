@@ -20,9 +20,6 @@ import {
 
 export const INPUT_DEBOUNCE_MS = 300;
 
-// gray.600 keeps placeholder text above 4.5:1 on white; Chakra's gray.500 is about 4:1.
-const PLACEHOLDER_STYLE = { color: 'gray.600' };
-
 const ageText = (age) => (age === undefined ? '' : String(age));
 const toAge = (text) => (text === '' ? undefined : Number(text));
 
@@ -117,7 +114,6 @@ const CustomerListToolbar = ({ params, onChange }) => {
             maxLength={MAX_SEARCH_LENGTH}
             onChange={(event) => setSearch(event.target.value)}
             bg="white"
-            _placeholder={PLACEHOLDER_STYLE}
           />
         </InputGroup>
       </FormControl>
@@ -148,7 +144,6 @@ const CustomerListToolbar = ({ params, onChange }) => {
             value={ages.minAge}
             onChange={(event) => setAges((current) => ({ ...current, minAge: event.target.value }))}
             bg="white"
-            _placeholder={PLACEHOLDER_STYLE}
           />
           <FormErrorMessage color="red.600">{minAgeError}</FormErrorMessage>
         </FormControl>
@@ -164,7 +159,6 @@ const CustomerListToolbar = ({ params, onChange }) => {
             value={ages.maxAge}
             onChange={(event) => setAges((current) => ({ ...current, maxAge: event.target.value }))}
             bg="white"
-            _placeholder={PLACEHOLDER_STYLE}
           />
           <FormErrorMessage color="red.600">{maxAgeError}</FormErrorMessage>
         </FormControl>
