@@ -27,6 +27,7 @@ import {
 } from 'react-icons/fi';
 import {Link as RouterLink, useLocation} from "react-router-dom";
 import {useAuth} from "../context/AuthContext.jsx";
+import Logo from "./Logo.jsx";
 
 // "ROLE_ADMIN" -> "Admin"
 const roleLabel = (role) => {
@@ -80,9 +81,7 @@ const SidebarContent = ({onClose, ...rest}) => {
             h="full"
             {...rest}>
             <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-                <Text fontSize="2xl" fontWeight="bold" letterSpacing="tight">
-                    Clientele
-                </Text>
+                <Logo size={32}/>
                 <CloseButton display={{base: 'flex', md: 'none'}} onClick={onClose}/>
             </Flex>
             {LinkItems.map((link) => (
@@ -159,13 +158,7 @@ const MobileNav = ({onOpen, ...rest}) => {
                 icon={<FiMenu/>}
             />
 
-            <Text
-                display={{base: 'flex', md: 'none'}}
-                fontSize="2xl"
-                fontWeight="bold"
-                letterSpacing="tight">
-                Clientele
-            </Text>
+            <Logo size={28} display={{base: 'flex', md: 'none'}}/>
 
             <HStack spacing={{base: '0', md: '6'}}>
                 <Flex alignItems={'center'}>

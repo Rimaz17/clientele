@@ -43,6 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The customer list is sorted newest first by default (`createdAt,desc` instead of `id,asc`), and `createdAt` can be used in `sort`. The React sort selector offers "Newest first" and "Oldest first" instead of the id-based options.
 - Demo customers in the `dev` profile get sign-up dates spread over the past year.
 - The React sidebar's first link is now "Dashboard", the header shows the Clientele name instead of the course logo and a "Logo" placeholder, and the browser tab is titled Clientele.
+- Clientele has its own logo: a "C" with a person in its counter, beside a Figtree wordmark. It appears in the React sidebar and mobile header, the Angular menu bar, and on the sign-in and sign-up pages of both apps, and is the favicon of both.
+- The sign-in and sign-up pages of both apps replace the course's "Enrol Now" panel and screenshot with a Clientele panel that says what the app does. In React the panel is hidden on small screens.
+- Email placeholders use `example.com` addresses instead of the course's domain, and the Angular browser tab is titled Clientele.
+- Both apps ship a `favicon.ico` and an Apple touch icon alongside the SVG favicon, for browsers and home screens that do not use SVG.
+- The sign-in and sign-up pages of both apps use the same wording throughout: "Sign in" and "Sign up" instead of a mix of "Login", "Signup" and "Sign in".
 
 ### Removed
 - The unused in-memory customer DAO.
@@ -66,6 +71,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The React picture dropzone says "Uploading the picture…" and ignores further drops while an upload is in progress.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
+- The React sign-in and sign-up links meet WCAG AA contrast (about 6.5:1 instead of 4:1), and every React input placeholder now does too.
+- The React sign-in and sign-up pages have an `h1` heading and show the logo once instead of twice side by side.
+- React toasts appear once instead of twice, stacked on top of each other.
+- The Angular login and register pages no longer scroll sideways, and show the logo once.
 
 ### Security
 - The JWT signing secret is no longer hard-coded. It is read from `clientele.jwt.secret` (environment variable `CLIENTELE_JWT_SECRET`); the `dev` profile, now the default, supplies a development-only secret. Any other profile refuses to start without a secret of at least 32 bytes. The previous secret is in Git history and is treated as compromised, so existing tokens stop working and users must log in again.

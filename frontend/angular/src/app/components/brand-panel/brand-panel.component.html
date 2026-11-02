@@ -1,0 +1,12 @@
+<aside class="brand-panel" aria-label="About Clientele">
+  <div class="brand-panel__content">
+    <app-logo [size]="56" tone="white"></app-logo>
+    <p class="brand-panel__tagline">One place to find, update and manage your customers.</p>
+    <ul class="brand-panel__highlights">
+      <li *ngFor="let highlight of highlights">
+        <i class="pi {{ highlight.icon }}" aria-hidden="true"></i>
+        {{ highlight.text }}
+      </li>
+    </ul>
+  </div>
+</aside>

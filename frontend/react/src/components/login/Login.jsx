@@ -1,11 +1,7 @@
 import {
     Button,
-    Flex,
-    Heading,
-    Image,
     Link,
     Stack,
-    Text,
 } from '@chakra-ui/react';
 import {Formik, Form} from "formik";
 import {TextField} from "../shared/FormFields.jsx";
@@ -15,6 +11,7 @@ import {errorNotification} from "../../services/notification.js";
 import {getApiErrorMessage} from "../../services/apiErrors.js";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
+import AuthLayout from "../shared/AuthLayout.jsx";
 
 const LoginForm = () => {
     const { login } = useAuth();
@@ -41,7 +38,7 @@ const LoginForm = () => {
                     console.log("Successfully logged in");
                 }).catch(err => {
                     errorNotification(
-                        "Login failed",
+                        "Sign in failed",
                         getApiErrorMessage(err)
                     )
                 }).finally(() => {
@@ -57,7 +54,7 @@ const LoginForm = () => {
                             label={"Email"}
                             name={"username"}
                             type={"email"}
-                            placeholder={"hello@amigoscode.com"}
+                            placeholder={"you@example.com"}
                         />
                         <TextField
                             isRequired
@@ -70,7 +67,7 @@ const LoginForm = () => {
                         <Button
                             type={"submit"}
                             disabled={!isValid || isSubmitting}>
-                            Login
+                            Sign in
                         </Button>
                     </Stack>
                 </Form>
@@ -92,44 +89,15 @@ const Login = () => {
     })
 
     return (
-        <Stack minH={'100vh'} direction={{base: 'column', md: 'row'}}>
-            <Flex p={8} flex={1} alignItems={'center'} justifyContent={'center'}>
-                <Stack spacing={4} w={'full'} maxW={'md'}>
-                    <Image
-                        src={"https://user-images.githubusercontent.com/40702606/210880158-e7d698c2-b19a-4057-b415-09f48a746753.png"}
-                        boxSize={"200px"}
-                        alt={"Amigoscode Logo"}
-                        alignSelf={"center"}
-                    />
-                    <Heading fontSize={'2xl'} mb={15}>Sign in to your account</Heading>
-                    <LoginForm/>
-                    <Link color={"blue.500"} href={"/signup"}>
-                        Dont have an account? Signup now.
-                    </Link>
-                </Stack>
-            </Flex>
-            <Flex
-                flex={1}
-                p={10}
-                flexDirection={"column"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                bgGradient={{sm: 'linear(to-r, blue.600, purple.600)'}}
-            >
-                <Text fontSize={"6xl"} color={'white'} fontWeight={"bold"} mb={5}>
-                    <Link target={"_blank"} href={"https://amigoscode.com/courses"}>
-                        Enrol Now
-                    </Link>
-                </Text>
-                <Image
-                    alt={'Login Image'}
-                    objectFit={'scale-down'}
-                    src={
-                        'https://user-images.githubusercontent.com/40702606/215539167-d7006790-b880-4929-83fb-c43fa74f429e.png'
-                    }
-                />
-            </Flex>
-        </Stack>
+        <AuthLayout
+            title="Sign in to your account"
+            footer={
+                <Link color={"brand.blueDark"} href={"/signup"}>
+                    Don&apos;t have an account? Sign up
+                </Link>
+            }>
+            <LoginForm/>
+        </AuthLayout>
     );
 }
 
