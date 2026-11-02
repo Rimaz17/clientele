@@ -1,0 +1,25 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  color: #2a78d6;
+
+  svg {
+    flex: none;
+  }
+}
+
+// The app sets no base font, so the wordmark takes PrimeNG's sans-serif stack
+// instead of falling back to the browser's serif.
+.logo__wordmark {
+  color: #1a202c;
+  font-family: var(--font-family);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  padding-bottom: 0.075em;
+}
+
+.logo--white,
+.logo--white .logo__wordmark {
+  color: #fff;
+}
