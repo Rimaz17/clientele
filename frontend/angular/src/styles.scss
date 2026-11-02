@@ -1,1 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
+// Clientele brand colours, shared with the React theme's brand tokens.
+:root {
+  --clientele-blue: #2a78d6;
+  // The blue for text: about 6.5:1 against white either way round.
+  --clientele-blue-dark: #1a5db0;
+  --clientele-ink: #1a202c;
+}

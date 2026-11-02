@@ -2,15 +2,15 @@
   display: flex;
 }
 
-// White text needs this darker blue to reach 4.5:1 contrast; the logo's
-// #2a78d6 only reaches about 4.4:1.
+// White text needs the darker brand blue to reach 4.5:1 contrast; the logo's
+// blue only reaches about 4.4:1.
 .brand-panel {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2.5rem;
-  background: #1a5db0;
+  background: var(--clientele-blue-dark);
   color: #fff;
   font-family: var(--font-family);
 }
