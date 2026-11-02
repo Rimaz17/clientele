@@ -19,7 +19,7 @@ const Signup = () => {
         <AuthLayout
             title="Register for an account"
             footer={
-                <Link color={"blue.500"} href={"/"}>
+                <Link color={"brand.blueDark"} href={"/"}>
                     Have an account? Login now.
                 </Link>
             }>

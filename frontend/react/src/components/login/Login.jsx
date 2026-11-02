@@ -92,7 +92,7 @@ const Login = () => {
         <AuthLayout
             title="Sign in to your account"
             footer={
-                <Link color={"blue.500"} href={"/signup"}>
+                <Link color={"brand.blueDark"} href={"/signup"}>
                     Dont have an account? Signup now.
                 </Link>
             }>

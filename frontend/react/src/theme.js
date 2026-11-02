@@ -10,8 +10,9 @@ const theme = extendTheme({
   colors: {
     brand: {
       blue: '#2a78d6',
-      // White body text needs this darker blue to reach 4.5:1; on brand.blue
-      // it only reaches about 4.4:1.
+      // The blue for text: about 6.5:1 against white either way round, as
+      // blue text on white or white text on blue. brand.blue only reaches
+      // about 4.4:1, under the 4.5:1 AA minimum.
       blueDark: '#1a5db0',
       ink: '#1a202c',
     },
