@@ -8,6 +8,7 @@ import Login from "./components/login/Login.jsx";
 import Signup from "./components/signup/Signup";
 import AuthProvider from "./components/context/AuthContext.jsx";
 import ProtectedRoute from "./components/shared/ProtectedRoute.jsx";
+import '@fontsource/figtree/600'
 import './index.css'
 import theme from './theme.js'
 
