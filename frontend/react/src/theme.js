@@ -10,6 +10,9 @@ const theme = extendTheme({
   colors: {
     brand: {
       blue: '#2a78d6',
+      // White body text needs this darker blue to reach 4.5:1; on brand.blue
+      // it only reaches about 4.4:1.
+      blueDark: '#1a5db0',
       ink: '#1a202c',
     },
     // Chart colours. The two series hues are checked for colour-blind
