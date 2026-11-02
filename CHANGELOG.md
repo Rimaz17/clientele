@@ -43,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The customer list is sorted newest first by default (`createdAt,desc` instead of `id,asc`), and `createdAt` can be used in `sort`. The React sort selector offers "Newest first" and "Oldest first" instead of the id-based options.
 - Demo customers in the `dev` profile get sign-up dates spread over the past year.
 - The React sidebar's first link is now "Dashboard", the header shows the Clientele name instead of the course logo and a "Logo" placeholder, and the browser tab is titled Clientele.
+- Clientele has its own logo: a "C" with a person in its counter, beside a Figtree wordmark. It appears in the React sidebar and mobile header, the Angular menu bar, and on the sign-in and sign-up pages of both apps, and is the favicon of both.
+- The sign-in and sign-up pages of both apps replace the course's "Enrol Now" panel and screenshot with a Clientele panel that says what the app does. In React the panel is hidden on small screens.
+- Email placeholders use `example.com` addresses instead of the course's domain, and the Angular browser tab is titled Clientele.
 
 ### Removed
 - The unused in-memory customer DAO.
