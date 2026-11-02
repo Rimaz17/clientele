@@ -25,6 +25,13 @@ const theme = extendTheme({
       axis: '#4a5568',
     },
   },
+  semanticTokens: {
+    colors: {
+      // Chakra's gray.500 placeholders measure about 4:1 on white; gray.600
+      // clears the 4.5:1 AA minimum.
+      'chakra-placeholder-color': { _light: 'gray.600', _dark: 'whiteAlpha.400' },
+    },
+  },
   components: {
     // Chakra 2.4's Card takes its background from a token that does not
     // resolve, which leaves cards transparent on the grey page.
