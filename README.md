@@ -30,7 +30,7 @@
 
 ![The Clientele dashboard: stat cards, monthly sign-ups, gender split and age distribution](docs/screenshots/dashboard.png)
 
-Clientele is a full-stack platform for managing customer accounts. A stateless **Spring Boot 3** API, secured with JWTs and server-side ownership rules, serves a **React 18** app with a live analytics dashboard and a secondary **Angular 15** client. Every endpoint is described in an **OpenAPI** contract you can try in the browser, every schema change is a versioned **Flyway** migration, and **more than 400 automated tests** cover it from the SQL up to full HTTP journeys against a real PostgreSQL in Docker.
+Clientele is a full-stack platform for managing customer accounts. A stateless **Spring Boot 3** API, secured with JWTs and server-side ownership rules, serves a **React 18** app with a live analytics dashboard and a secondary **Angular 15** client. Profile pictures are stored in **Amazon S3** through the AWS SDK v2, with a local-disk fallback for development. Every endpoint is described in an **OpenAPI** contract you can try in the browser, every schema change is a versioned **Flyway** migration, and **more than 400 automated tests** cover it from the SQL up to full HTTP journeys against a real PostgreSQL in Docker.
 
 ## Highlights
 
