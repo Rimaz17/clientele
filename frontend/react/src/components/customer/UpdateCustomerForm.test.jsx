@@ -2,7 +2,11 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { updateCustomer } from '../../services/client.js';
+import {
+  customerProfilePictureUrl,
+  updateCustomer,
+  uploadCustomerProfilePicture,
+} from '../../services/client.js';
 import { errorNotification } from '../../services/notification.js';
 import { fakeToken } from '../../test/fakeToken.js';
 import AuthProvider from '../context/AuthContext.jsx';
@@ -11,7 +15,9 @@ import UpdateCustomerForm from './UpdateCustomerForm.jsx';
 vi.mock('../../services/client.js', () => ({
   updateCustomer: vi.fn(),
   uploadCustomerProfilePicture: vi.fn(),
-  customerProfilePictureUrl: (id) => `/api/v1/customers/${id}/profile-image`,
+  customerProfilePictureUrl: vi.fn(
+    (id, version) => `/api/v1/customers/${id}/profile-image?v=${version}`,
+  ),
 }));
 vi.mock('../../services/notification.js', () => ({
   errorNotification: vi.fn(),
@@ -20,18 +26,21 @@ vi.mock('../../services/notification.js', () => ({
 
 const oldToken = fakeToken({ sub: 'alex@clientele.dev' });
 
-const renderForm = (fetchCustomers = vi.fn()) =>
-  render(
-    <ChakraProvider>
-      <AuthProvider>
-        <UpdateCustomerForm
-          fetchCustomers={fetchCustomers}
-          initialValues={{ name: 'Alex', email: 'alex@clientele.dev', age: 30 }}
-          customerId={1}
-        />
-      </AuthProvider>
-    </ChakraProvider>,
-  );
+const formFor = (fetchCustomers, profileImageId) => (
+  <ChakraProvider>
+    <AuthProvider>
+      <UpdateCustomerForm
+        fetchCustomers={fetchCustomers}
+        initialValues={{ name: 'Alex', email: 'alex@clientele.dev', age: 30 }}
+        customerId={1}
+        profileImageId={profileImageId}
+      />
+    </AuthProvider>
+  </ChakraProvider>
+);
+
+const renderForm = (fetchCustomers = vi.fn(), profileImageId = 'old-picture') =>
+  render(formFor(fetchCustomers, profileImageId));
 
 const changeEmail = async (user, email) => {
   const input = screen.getByLabelText(/^Email Address/);
@@ -91,5 +100,54 @@ describe('UpdateCustomerForm', () => {
       ),
     );
     expect(localStorage.getItem('access_token')).toBe(oldToken);
+  });
+
+  it('uploads a dropped picture and refreshes the customers', async () => {
+    uploadCustomerProfilePicture.mockResolvedValue({});
+    const fetchCustomers = vi.fn();
+    const user = userEvent.setup();
+    const { container } = renderForm(fetchCustomers);
+    const picture = new File(['picture'], 'alex.png', { type: 'image/png' });
+
+    await user.upload(container.querySelector('input[type="file"]'), picture);
+
+    await vi.waitFor(() => expect(fetchCustomers).toHaveBeenCalled());
+    const [customerId, formData] = uploadCustomerProfilePicture.mock.calls[0];
+    expect(customerId).toBe(1);
+    expect(formData.get('file')).toBe(picture);
+  });
+
+  it('shows the new picture once the refreshed customer has a new image id', () => {
+    const fetchCustomers = vi.fn();
+    const { rerender } = renderForm(fetchCustomers, 'old-picture');
+    expect(customerProfilePictureUrl).toHaveBeenLastCalledWith(1, 'old-picture');
+
+    rerender(formFor(fetchCustomers, 'new-picture'));
+
+    expect(customerProfilePictureUrl).toHaveBeenLastCalledWith(1, 'new-picture');
+  });
+
+  it('says the picture is uploading until the upload finishes', async () => {
+    let finishUpload;
+    uploadCustomerProfilePicture.mockReturnValue(
+      new Promise((resolve) => (finishUpload = resolve)),
+    );
+    const user = userEvent.setup();
+    const { container } = renderForm();
+    const picture = new File(['picture'], 'alex.png', { type: 'image/png' });
+
+    await user.upload(container.querySelector('input[type="file"]'), picture);
+
+    expect(await screen.findByText('Uploading the picture…')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upload a new profile picture' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+
+    finishUpload({});
+
+    expect(
+      await screen.findByText('Drag a picture here, or click to choose one'),
+    ).toBeInTheDocument();
   });
 });

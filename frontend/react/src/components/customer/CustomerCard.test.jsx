@@ -3,14 +3,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { deleteCustomer } from '../../services/client.js';
+import { customerProfilePictureUrl, deleteCustomer } from '../../services/client.js';
 import { fakeToken } from '../../test/fakeToken.js';
 import AuthProvider from '../context/AuthContext.jsx';
 import CardWithImage from './CustomerCard.jsx';
 
 vi.mock('../../services/client.js', () => ({
   deleteCustomer: vi.fn(),
-  customerProfilePictureUrl: (id) => `/api/v1/customers/${id}/profile-image`,
+  customerProfilePictureUrl: vi.fn(
+    (id, version) => `/api/v1/customers/${id}/profile-image?v=${version}`,
+  ),
 }));
 vi.mock('../../services/notification.js', () => ({
   errorNotification: vi.fn(),
@@ -97,6 +99,12 @@ describe('CustomerCard', () => {
     renderCard(jamila, { sub: 'jamila@clientele.dev' });
 
     expect(screen.getByText('You')).toBeInTheDocument();
+  });
+
+  it("asks for the customer's current picture by its image id", () => {
+    renderCard({ ...jamila, profileImageId: 'picture-2' }, { sub: 'alex@clientele.dev' });
+
+    expect(customerProfilePictureUrl).toHaveBeenLastCalledWith(2, 'picture-2');
   });
 
   it('signs users out after they delete their own account', async () => {

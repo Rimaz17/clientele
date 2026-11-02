@@ -61,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The profile picture dropzone has an accessible name and focus ring, lists the accepted types and the 10 MB limit, and explains rejected files; a customer without a picture shows their initials.
 - The Angular app shows the API error message when registering, saving, updating or deleting a customer fails.
 - React sidebar links show a keyboard focus ring, mark the current page, keep AA contrast on hover and navigate without reloading the app.
+- After a profile picture upload, the React customer card and the open update drawer show the new picture straight away instead of after a page reload. Picture URLs now carry the image id (`?v=<profileImageId>`), so the browser cannot reuse the old image.
+- Customers without a profile picture no longer make the React app request an image that answers `404`; their initials show straight away.
+- The React picture dropzone says "Uploading the picture…" and ignores further drops while an upload is in progress.
 - `docker compose` now creates the `customer` database when the volume is first created.
 - Testcontainers tests work with Docker Engine 29 and later.
 

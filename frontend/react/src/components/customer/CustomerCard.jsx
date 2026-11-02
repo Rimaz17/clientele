@@ -24,7 +24,7 @@ import UpdateCustomerDrawer from "./UpdateCustomerDrawer.jsx";
 import {useAuth} from "../context/AuthContext.jsx";
 import {useNavigate} from "react-router-dom";
 
-export default function CardWithImage({id, name, email, age, gender, roles = [], fetchCustomers}) {
+export default function CardWithImage({id, name, email, age, gender, roles = [], profileImageId, fetchCustomers}) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const cancelRef = useRef()
     const { isAdmin, isCurrentCustomer, logOut } = useAuth()
@@ -55,7 +55,9 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                     <Avatar
                         size={'xl'}
                         name={name}
-                        src={customerProfilePictureUrl(id)}
+                        // A new profileImageId after an upload means a new URL, so
+                        // the card shows the new picture once the list refreshes.
+                        src={customerProfilePictureUrl(id, profileImageId)}
                         css={{
                             border: '2px solid white',
                         }}
@@ -87,6 +89,7 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                             <UpdateCustomerDrawer
                                 initialValues={{ name, email, age }}
                                 customerId={id}
+                                profileImageId={profileImageId}
                                 fetchCustomers={fetchCustomers}
                             />
                         </Stack>
