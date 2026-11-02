@@ -38,7 +38,7 @@ const LoginForm = () => {
                     console.log("Successfully logged in");
                 }).catch(err => {
                     errorNotification(
-                        "Login failed",
+                        "Sign in failed",
                         getApiErrorMessage(err)
                     )
                 }).finally(() => {
@@ -67,7 +67,7 @@ const LoginForm = () => {
                         <Button
                             type={"submit"}
                             disabled={!isValid || isSubmitting}>
-                            Login
+                            Sign in
                         </Button>
                     </Stack>
                 </Form>
@@ -93,7 +93,7 @@ const Login = () => {
             title="Sign in to your account"
             footer={
                 <Link color={"brand.blueDark"} href={"/signup"}>
-                    Dont have an account? Signup now.
+                    Don&apos;t have an account? Sign up
                 </Link>
             }>
             <LoginForm/>

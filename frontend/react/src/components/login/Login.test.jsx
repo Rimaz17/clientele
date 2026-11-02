@@ -23,12 +23,12 @@ describe('Login', () => {
     expect(screen.getByRole('heading', { name: 'Sign in to your account' })).toBeInTheDocument();
     expect(screen.getByText('Email')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
   });
 
   it('keeps the login button disabled until the form is valid', async () => {
     renderLogin();
 
-    expect(await screen.findByRole('button', { name: 'Login' })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeDisabled();
   });
 });

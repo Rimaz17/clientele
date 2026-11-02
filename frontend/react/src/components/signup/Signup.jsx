@@ -20,7 +20,7 @@ const Signup = () => {
             title="Register for an account"
             footer={
                 <Link color={"brand.blueDark"} href={"/"}>
-                    Have an account? Login now.
+                    Already have an account? Sign in
                 </Link>
             }>
             <CreateCustomerForm onSuccess={(token) => {
