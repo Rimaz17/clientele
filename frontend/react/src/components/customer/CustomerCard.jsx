@@ -89,6 +89,7 @@ export default function CardWithImage({id, name, email, age, gender, roles = [],
                             <UpdateCustomerDrawer
                                 initialValues={{ name, email, age }}
                                 customerId={id}
+                                profileImageId={profileImageId}
                                 fetchCustomers={fetchCustomers}
                             />
                         </Stack>

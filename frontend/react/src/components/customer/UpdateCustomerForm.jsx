@@ -76,17 +76,19 @@ const MyDropzone = ({ customerId, fetchCustomers }) => {
     )
 }
 
-const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId}) => {
+const UpdateCustomerForm = ({fetchCustomers, initialValues, customerId, profileImageId}) => {
     const { storeToken } = useAuth()
     return (
         <>
             <VStack spacing={'5'} mb={'5'}>
-                {/* Avatar falls back to the customer's initials when there is no picture yet. */}
+                {/* Avatar falls back to the customer's initials when there is no picture yet.
+                    After an upload the list refreshes with a new profileImageId, which
+                    changes the URL, so the open drawer shows the new picture. */}
                 <Avatar
                     boxSize={'150px'}
                     size={'2xl'}
                     name={initialValues.name}
-                    src={customerProfilePictureUrl(customerId)}
+                    src={customerProfilePictureUrl(customerId, profileImageId)}
                 />
                 <MyDropzone
                     customerId={customerId}
